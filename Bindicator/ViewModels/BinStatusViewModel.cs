@@ -40,7 +40,14 @@
         /// </summary>
         public DateTime Timestamp { get; set; }
 
+        /// <summary>
+        /// Gets or sets the environment temperature associated with the bin.
+        /// </summary>
         public float? Temperature { get; set; }
+
+        /// <summary>
+        /// Gets or sets the environment humidity associated with the bin.
+        /// </summary>
         public float? Humidity { get; set; }
 
         /// <summary>
