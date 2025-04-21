@@ -1,0 +1,70 @@
+﻿@model List<Bindicator.ViewModels.BinStatusViewModel>
+
+@{
+    ViewData["Title"] = "Bin Dashboard";
+}
+
+<div class="mb-3">
+    <a asp-controller="Dashboard" asp-action="Map" class="btn btn-primary">
+        🗺️ View Map
+    </a>
+</div>
+
+<style>
+    th {
+        cursor: pointer;
+    }
+</style>
+
+<h2>Bin Dashboard</h2>
+<p>Filter by street or postcode</p>
+<p>Click on a column header to sort the table</p>
+
+<input type="text" id="binFilter" class="form-control mb-3" placeholder="Search by street or postcode" />
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Postcode</th>
+            <th>Street</th>
+            <th>Bin #</th>
+            <th>Fill Level (%)</th>
+            <th>Weight (kg)</th>
+            <th>Density</th>
+            <th>Last Updated</th>
+            <th>Trend</th>
+        </tr>
+    </thead>
+    <tbody id="binTableBody">
+        @await Html.PartialAsync("_BinTable", Model)
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        let isFiltering = false;
+
+        function applyFilter() {
+            const filter = document.getElementById('binFilter').value.toLowerCase();
+            document.querySelectorAll("#binTableBody tr").forEach(function (row) {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        document.getElementById('binFilter').addEventListener('focus', () => isFiltering = true);
+        document.getElementById('binFilter').addEventListener('blur', () => isFiltering = false);
+        document.getElementById('binFilter').addEventListener('keyup', applyFilter);
+
+        setInterval(() => {
+            if (!isFiltering) {
+                fetch('/Dashboard/GetLatestBins')
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById('binTableBody').innerHTML = html;
+                        applyFilter(); // Re-apply filtering after update
+                    });
+            }
+        }, 15000);
+    </script>
+}

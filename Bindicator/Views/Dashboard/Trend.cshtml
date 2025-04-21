@@ -1,0 +1,136 @@
+﻿@model Bindicator.ViewModels.BinTrendViewModel
+
+@{
+    ViewData["Title"] = "Bin Fill Trend";
+
+    var labels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("HH:mm")).ToList();
+    var fillLevels = Model.Readings.Select(r => r.FillLevel).ToList();
+    var weights = Model.Readings.Select(r => r.Weight).ToList();
+    var densities = Model.Readings.Select(r => r.Density).ToList();
+
+    // Build the spike annotations
+    var spikeAnnotations = Model.Spikes.Select((spike, index) => $@"""spike{index}"": {{
+    type: 'line',
+    xMin: '{spike.Timestamp.ToLocalTime():HH\\:mm}',
+    xMax: '{spike.Timestamp.ToLocalTime():HH\\:mm}',
+    borderColor: 'blue', // matches fill level
+    borderWidth: 2,
+    label: {{
+        content: 'Spike: {spike.ToLevel}%',
+        enabled: true,
+        position: 'start',
+        backgroundColor: 'rgba(0, 0, 255, 0.1)', // subtle blue background
+        color: 'blue'
+        }}
+    }}");
+
+    var annotationsJson = "{" + string.Join(",", spikeAnnotations) + "}";
+}
+
+<h2>Bin Fill Trend</h2>
+
+<p>
+    <strong>@Model.Street @Model.BinNumber</strong> (@Model.Postcode)
+</p>
+
+<a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary mb-3">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+<canvas id="fillChart" width="800" height="400"></canvas>
+
+@if (Model.PredictedFullDate.HasValue && Model.DaysToFull.HasValue)
+{
+    <div class="alert alert-info mt-4">
+        <strong>🧠 Prediction:</strong><br />
+        Based on current trends, this bin is predicted to be full
+        <strong>@Model.DaysToFull.Value.ToString("0.0") days</strong> from the earliest reading,
+        around <strong>@Model.PredictedFullDate.Value.ToLocalTime().ToString("f")</strong>.
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary mt-4">
+        Prediction not available — not enough historical data.
+    </div>
+}
+
+
+<!-- Chart.js & Annotations plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+
+<script>
+   // Register the Chart.js annotation plugin
+   Chart.register(window['chartjs-plugin-annotation']);
+
+   // Get the 2D rendering context of the canvas element
+   const ctx = document.getElementById('fillChart').getContext('2d');
+
+   // Create a new Chart.js line chart
+   const chart = new Chart(ctx, {
+       type: 'line', // Specify the chart type as a line chart
+       data: {
+           labels: @Html.Raw(Json.Serialize(labels)), // X-axis labels (timestamps of readings)
+           datasets: [
+               {
+                   label: 'Fill Level (%)', // Dataset label for fill levels
+                   data: @Html.Raw(Json.Serialize(fillLevels)), // Y-axis data for fill levels
+                   borderColor: 'blue', // Line color
+                   backgroundColor: 'rgba(0, 0, 255, 0.1)', // Fill color under the line
+                   tension: 0.2, // Line tension for smooth curves
+                   fill: false // Disable area fill under the line
+               },
+               {
+                   label: 'Weight (kg)', // Dataset label for weights
+                   data: @Html.Raw(Json.Serialize(weights)), // Y-axis data for weights
+                   borderColor: 'red', // Line color
+                   backgroundColor: 'rgba(255, 0, 0, 0.1)', // Fill color under the line
+                   tension: 0.2, // Line tension for smooth curves
+                   fill: false // Disable area fill under the line
+               },
+               {
+                   label: 'Density', // Dataset label for density
+                   data: @Html.Raw(Json.Serialize(densities)), // Y-axis data for density
+                   borderColor: 'green', // Line color
+                   backgroundColor: 'rgba(0, 128, 0, 0.1)', // Fill color under the line
+                   tension: 0.2, // Line tension for smooth curves
+                   fill: false // Disable area fill under the line
+               }
+           ]
+       },
+       options: {
+           responsive: true, // Make the chart responsive to screen size
+           plugins: {
+               legend: {
+                   position: 'top' // Position the legend at the top of the chart
+               },
+               title: {
+                   display: false // Disable the chart title
+               },
+               annotation: {
+                   annotations: @Html.Raw(annotationsJson) // Add spike annotations to the chart
+               }
+           },
+           scales: {
+               y: {
+                   beginAtZero: true // Start the Y-axis at zero
+               }
+           }
+       }
+   });
+</script>
+
+@if (Model.Spikes.Any())
+{
+    <div class="alert alert-warning mt-4">
+        <strong>⚠️ Sudden Fill Spikes Detected:</strong>
+        <ul>
+            @foreach (var spike in Model.Spikes)
+            {
+                <li>
+                    @spike.Timestamp.ToLocalTime(): Fill jumped from @spike.FromLevel% to @spike.ToLevel%
+                </li>
+            }
+        </ul>
+    </div>
+}

@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Bindicator</h1>
+    <h2>Smart bins. Smarter cities</h2>
+</div>
+<h3>Prototype features:</h3>
+<ul>
+    <li>Real-time data binding</li>
+    <li>Customizable indicators</li>
+    <li>Responsive design</li>
+    <li>Data visualization</li>
+    <li>Cross-platform compatibility</li>
+    <li>Easy integration with existing applications</li>
+    <li>Open-source and community-driven</li>
+</ul>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Dashboard</h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">View the status of all bins in your area.</p>
+                <a href="@Url.Action("Index", "Dashboard")" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Map</h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">View the location of all bins on a map.</p>
+                <a href="@Url.Action("Map", "Dashboard")" class="btn btn-primary">Go to Map</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Settings</h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Configure your bin settings.</p>
+                <a href="@Url.Action("Index", "Settings")" class="btn btn-primary">Go to Settings</a>
+            </div>
+        </div>
+    </div>
+</div>

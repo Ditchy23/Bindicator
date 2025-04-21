@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Dashboard - No Data";
+}
+
+<div class="alert alert-warning mt-4 text-center">
+    <h4>🚫 No data available</h4>
+    <p>@ViewBag.ErrorMessage</p>
+    <p>If you're developing locally, try ensuring the database exists or run the seed process.</p>
+</div>
+<form asp-action="SeedData" asp-controller="Dashboard" method="post" class="mb-3">
+    <button type="submit" class="btn btn-warning">
+        🔄 Seed Dummy Data
+    </button>
+</form>
