@@ -28,6 +28,11 @@ namespace Bindicator.ViewModels
         public List<SensorData> Readings { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets the list of environment data readings.
+        /// </summary>
+        public List<EnvironmentData> EnvironmentReadings { get; set; } = new();
+
+        /// <summary>
         /// Gets or sets the list of spike points indicating significant changes in bin levels.
         /// </summary>
         public List<SpikePoint> Spikes { get; set; } = new();

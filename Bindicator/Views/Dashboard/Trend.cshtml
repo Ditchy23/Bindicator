@@ -7,6 +7,8 @@
     var fillLevels = Model.Readings.Select(r => r.FillLevel).ToList();
     var weights = Model.Readings.Select(r => r.Weight).ToList();
     var densities = Model.Readings.Select(r => r.Density).ToList();
+    var temperatures = Model.EnvironmentReadings.Select(e => e.Temperature).ToList();
+    var humidities = Model.EnvironmentReadings.Select(e => e.Humidity).ToList();
 
     // Build the spike annotations
     var spikeAnnotations = Model.Spikes.Select((spike, index) => $@"""spike{index}"": {{
@@ -34,7 +36,8 @@
 </p>
 
 <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary mb-3">
-    <i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+</a>
 
 <canvas id="fillChart" width="800" height="400"></canvas>
 
@@ -60,67 +63,83 @@ else
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
 
 <script>
-   // Register the Chart.js annotation plugin
-   Chart.register(window['chartjs-plugin-annotation']);
+    // Register the Chart.js annotation plugin
+    Chart.register(window['chartjs-plugin-annotation']);
 
-   // Get the 2D rendering context of the canvas element
-   const ctx = document.getElementById('fillChart').getContext('2d');
+    // Get the 2D rendering context of the canvas element
+    const ctx = document.getElementById('fillChart').getContext('2d');
 
-   // Create a new Chart.js line chart
-   const chart = new Chart(ctx, {
-       type: 'line', // Specify the chart type as a line chart
-       data: {
-           labels: @Html.Raw(Json.Serialize(labels)), // X-axis labels (timestamps of readings)
-           datasets: [
-               {
-                   label: 'Fill Level (%)', // Dataset label for fill levels
-                   data: @Html.Raw(Json.Serialize(fillLevels)), // Y-axis data for fill levels
-                   borderColor: 'blue', // Line color
-                   backgroundColor: 'rgba(0, 0, 255, 0.1)', // Fill color under the line
-                   tension: 0.2, // Line tension for smooth curves
-                   fill: false // Disable area fill under the line
-               },
-               {
-                   label: 'Weight (kg)', // Dataset label for weights
-                   data: @Html.Raw(Json.Serialize(weights)), // Y-axis data for weights
-                   borderColor: 'red', // Line color
-                   backgroundColor: 'rgba(255, 0, 0, 0.1)', // Fill color under the line
-                   tension: 0.2, // Line tension for smooth curves
-                   fill: false // Disable area fill under the line
-               },
-               {
-                   label: 'Density', // Dataset label for density
-                   data: @Html.Raw(Json.Serialize(densities)), // Y-axis data for density
-                   borderColor: 'green', // Line color
-                   backgroundColor: 'rgba(0, 128, 0, 0.1)', // Fill color under the line
-                   tension: 0.2, // Line tension for smooth curves
-                   fill: false // Disable area fill under the line
-               }
-           ]
-       },
-       options: {
-           responsive: true, // Make the chart responsive to screen size
-           plugins: {
-               legend: {
-                   position: 'top' // Position the legend at the top of the chart
-               },
-               title: {
-                   display: false // Disable the chart title
-               },
-               annotation: {
-                   annotations: @Html.Raw(annotationsJson) // Add spike annotations to the chart
-               }
-           },
-           scales: {
-               y: {
-                   beginAtZero: true // Start the Y-axis at zero
-               }
-           }
-       }
-   });
+    // Create a new Chart.js line chart
+    const chart = new Chart(ctx, {
+        type: 'line', // Specify the chart type as a line chart
+        data: {
+            labels: @Html.Raw(Json.Serialize(labels)), // X-axis labels (timestamps of readings)
+            datasets: [
+                {
+                    label: 'Fill Level (%)', // Dataset label for fill levels
+                    data: @Html.Raw(Json.Serialize(fillLevels)), // Y-axis data for fill levels
+                    borderColor: 'blue', // Line color
+                    backgroundColor: 'rgba(0, 0, 255, 0.1)', // Fill color under the line
+                    tension: 0.2, // Line tension for smooth curves
+                    fill: false // Disable area fill under the line
+                },
+                {
+                    label: 'Weight (kg)', // Dataset label for weights
+                    data: @Html.Raw(Json.Serialize(weights)), // Y-axis data for weights
+                    borderColor: 'red', // Line color
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)', // Fill color under the line
+                    tension: 0.2, // Line tension for smooth curves
+                    fill: false // Disable area fill under the line
+                },
+                {
+                    label: 'Density', // Dataset label for density
+                    data: @Html.Raw(Json.Serialize(densities)), // Y-axis data for density
+                    borderColor: 'green', // Line color
+                    backgroundColor: 'rgba(0, 128, 0, 0.1)', // Fill color under the line
+                    tension: 0.2, // Line tension for smooth curves
+                    fill: false // Disable area fill under the line
+                },
+                {
+                    label: 'Temperature (°C)', // Dataset label for temperature
+                    data: @Html.Raw(Json.Serialize(temperatures)), // Y-axis data for temperature
+                    borderColor: 'orange', // Line color
+                    backgroundColor: 'rgba(255, 165, 0, 0.1)', // Fill color under the line
+                    tension: 0.2, // Line tension for smooth curves
+                    fill: false // Disable area fill under the line
+                },
+                {
+                    label: 'Humidity (%)', // Dataset label for humidity
+                    data: @Html.Raw(Json.Serialize(humidities)), // Y-axis data for humidity
+                    borderColor: 'purple', // Line color
+                    backgroundColor: 'rgba(128, 0, 128, 0.1)', // Fill color under the line
+                    tension: 0.2, // Line tension for smooth curves
+                    fill: false // Disable area fill under the line
+                }
+            ]
+        },
+        options: {
+            responsive: true, // Make the chart responsive to screen size
+            plugins: {
+                legend: {
+                    position: 'top' // Position the legend at the top of the chart
+                },
+                title: {
+                    display: false // Disable the chart title
+                },
+                annotation: {
+                    annotations: {} // Add spike annotations to the chart, currently disapled
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true // Start the Y-axis at zero
+                }
+            }
+        }
+    });
 </script>
 
-@if (Model.Spikes.Any())
+@* @if (Model.Spikes.Any())
 {
     <div class="alert alert-warning mt-4">
         <strong>⚠️ Sudden Fill Spikes Detected:</strong>
@@ -133,4 +152,4 @@ else
             }
         </ul>
     </div>
-}
+} *@

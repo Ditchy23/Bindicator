@@ -27,28 +27,36 @@ namespace Bindicator.Services
         /// <returns>A list of the latest <see cref="BinStatusViewModel"/>.</returns>
         public async Task<List<BinStatusViewModel>> GetLatestBinStatusesAsync()
         {
-            var allReadings = await _context.SensorReadings
-                .OrderByDescending(b => b.Timestamp)
+            var latestSensorData = await _context.SensorReadings
+                .GroupBy(b => new { b.Postcode, b.Street, b.BinNumber })
+                .Select(g => g.OrderByDescending(r => r.Timestamp).First())
                 .ToListAsync();
 
-            var latest = allReadings
-                .GroupBy(b => new { b.Postcode, b.Street, b.BinNumber })
-                .Select(g => g.First())
-                .OrderByDescending(b => b.Timestamp)
-                .ToList();
+            var latestEnvData = await _context.EnvironmentReadings
+                .GroupBy(e => new { e.Postcode, e.Street, e.BinNumber })
+                .Select(g => g.OrderByDescending(e => e.Timestamp).First())
+                .ToListAsync();
 
-            return latest.Select(b => new BinStatusViewModel
-            {
-                Postcode = b.Postcode,
-                Street = b.Street,
-                BinNumber = b.BinNumber,
-                FillLevel = b.FillLevel,
-                Weight = b.Weight,
-                Density = b.Density,
-                Timestamp = b.Timestamp,
-                Latitude = b.Latitude,
-                Longitude = b.Longitude
-            }).ToList();
+            var viewModels = from sensor in latestSensorData
+                             join env in latestEnvData
+                             on new { sensor.Postcode, sensor.Street, sensor.BinNumber }
+                             equals new { env.Postcode, env.Street, env.BinNumber } into joined
+                             from env in joined.DefaultIfEmpty()
+                             select new BinStatusViewModel
+                             {
+                                 Postcode = sensor.Postcode,
+                                 Street = sensor.Street,
+                                 BinNumber = sensor.BinNumber,
+                                 FillLevel = sensor.FillLevel,
+                                 Weight = sensor.Weight,
+                                 Density = sensor.Density,
+                                 Timestamp = sensor.Timestamp,
+                                 Temperature = env?.Temperature,
+                                 Humidity = env?.Humidity
+                             };
+
+            return viewModels.ToList();
         }
+
     }
 }

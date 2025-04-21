@@ -36,6 +36,16 @@
         public float Humidity { get; set; }
 
         /// <summary>
+        /// The daily low temperature recorded at the location.
+        /// </summary>
+        public float? LowTemp { get; set; }
+
+        /// <summary>
+        /// The daily high temperature recorded at the location.
+        /// </summary>
+        public float? HighTemp { get; set; }
+
+        /// <summary>
         /// Gets or sets the timestamp when the data was recorded.
         /// </summary>
         public DateTime Timestamp { get; set; }

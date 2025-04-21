@@ -53,6 +53,11 @@ namespace Bindicator.Services
                 }
             }
 
+            var envReadings = await _context.EnvironmentReadings
+                .Where(e => e.Postcode == postcode && e.Street == street && e.BinNumber == binNumber)
+                .OrderBy(e => e.Timestamp)
+                .ToListAsync();
+
             // Simple linear regression prediction based on weight
             DateTime? predictedDate = null;
             double? daysToFull = null;
@@ -88,6 +93,7 @@ namespace Bindicator.Services
                 Street = street,
                 BinNumber = binNumber,
                 Readings = readings,
+                EnvironmentReadings = envReadings,
                 Spikes = spikes,
                 PredictedFullDate = predictedDate,
                 DaysToFull = daysToFull

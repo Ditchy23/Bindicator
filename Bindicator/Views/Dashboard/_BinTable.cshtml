@@ -17,6 +17,8 @@
         <td>@bin.FillLevel</td>
         <td>@bin.Weight</td>
         <td>@bin.Density</td>
+        <td>@(bin.Temperature?.ToString("F1") ?? "—")</td>
+        <td>@(bin.Humidity?.ToString("F0") ?? "—")</td>
         <td>
             @bin.Timestamp.ToLocalTime().ToString("g")
             <br />

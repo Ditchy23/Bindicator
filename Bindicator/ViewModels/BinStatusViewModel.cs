@@ -40,6 +40,9 @@
         /// </summary>
         public DateTime Timestamp { get; set; }
 
+        public float? Temperature { get; set; }
+        public float? Humidity { get; set; }
+
         /// <summary>
         /// Gets or sets the latitude of the bin's location.
         /// </summary>
