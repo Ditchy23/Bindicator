@@ -36,23 +36,6 @@ namespace Bindicator.Services
                 .OrderBy(b => b.Timestamp)
                 .ToListAsync();
 
-            var spikes = new List<SpikePoint>();
-
-            for (int i = 1; i < readings.Count; i++)
-            {
-                var prev = readings[i - 1];
-                var current = readings[i];
-                if ((current.FillLevel - prev.FillLevel) >= 30)
-                {
-                    spikes.Add(new SpikePoint
-                    {
-                        Timestamp = current.Timestamp,
-                        FromLevel = prev.FillLevel,
-                        ToLevel = current.FillLevel
-                    });
-                }
-            }
-
             var envReadings = await _context.EnvironmentReadings
                 .Where(e => e.Postcode == postcode && e.Street == street && e.BinNumber == binNumber)
                 .OrderBy(e => e.Timestamp)
@@ -94,7 +77,6 @@ namespace Bindicator.Services
                 BinNumber = binNumber,
                 Readings = readings,
                 EnvironmentReadings = envReadings,
-                Spikes = spikes,
                 PredictedFullDate = predictedDate,
                 DaysToFull = daysToFull
             };

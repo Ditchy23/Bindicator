@@ -75,10 +75,4 @@ public class DbSeeder
         context.EnvironmentReadings.AddRange(environmentData);
         await context.SaveChangesAsync();
     }
-
-    private static float GetRandomFloat(float min, float max)
-    {
-        var rand = new Random();
-        return (float)(rand.NextDouble() * (max - min) + min);
-    }
 }

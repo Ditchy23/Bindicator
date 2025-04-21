@@ -3,30 +3,12 @@
 @{
     ViewData["Title"] = "Bin Fill Trend";
 
-    var labels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("HH:mm")).ToList();
+    var labels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
     var fillLevels = Model.Readings.Select(r => r.FillLevel).ToList();
     var weights = Model.Readings.Select(r => r.Weight).ToList();
     var densities = Model.Readings.Select(r => r.Density).ToList();
     var temperatures = Model.EnvironmentReadings.Select(e => e.Temperature).ToList();
     var humidities = Model.EnvironmentReadings.Select(e => e.Humidity).ToList();
-
-    // Build the spike annotations
-    var spikeAnnotations = Model.Spikes.Select((spike, index) => $@"""spike{index}"": {{
-    type: 'line',
-    xMin: '{spike.Timestamp.ToLocalTime():HH\\:mm}',
-    xMax: '{spike.Timestamp.ToLocalTime():HH\\:mm}',
-    borderColor: 'blue', // matches fill level
-    borderWidth: 2,
-    label: {{
-        content: 'Spike: {spike.ToLevel}%',
-        enabled: true,
-        position: 'start',
-        backgroundColor: 'rgba(0, 0, 255, 0.1)', // subtle blue background
-        color: 'blue'
-        }}
-    }}");
-
-    var annotationsJson = "{" + string.Join(",", spikeAnnotations) + "}";
 }
 
 <h2>Bin Fill Trend</h2>
@@ -131,25 +113,21 @@ else
                 }
             },
             scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time'
+                    }
+                    // No type, Chart.js will treat this as category axis
+                },
                 y: {
-                    beginAtZero: true // Start the Y-axis at zero
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Fill Level (%)'
+                    }
                 }
             }
         }
     });
 </script>
-
-@* @if (Model.Spikes.Any())
-{
-    <div class="alert alert-warning mt-4">
-        <strong>⚠️ Sudden Fill Spikes Detected:</strong>
-        <ul>
-            @foreach (var spike in Model.Spikes)
-            {
-                <li>
-                    @spike.Timestamp.ToLocalTime(): Fill jumped from @spike.FromLevel% to @spike.ToLevel%
-                </li>
-            }
-        </ul>
-    </div>
-} *@
