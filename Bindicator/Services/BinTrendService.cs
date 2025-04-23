@@ -69,7 +69,7 @@ namespace Bindicator.Services
                         predictedDate = readings[0].Timestamp.AddDays(daysToFull.Value);
                 }
             }
-
+            // Logic for warning messages
             var warnings = new List<string>();
 
             var latestSensor = readings.LastOrDefault();

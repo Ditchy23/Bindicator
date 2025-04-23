@@ -8,6 +8,7 @@ namespace Bindicator.Controllers
 {
     /// <summary>
     /// Controller for handling dashboard-related actions.
+    /// This includes displaying the dashboard, trends, and maps.
     /// </summary>
     public class DashboardController : Controller
     {
@@ -86,6 +87,13 @@ namespace Bindicator.Controllers
             return View(bins);
         }
 
+        /// <summary>
+        /// Displays the edit location view for a specific bin.
+        /// </summary>
+        /// <param name="postcode"></param>
+        /// <param name="street"></param>
+        /// <param name="binNumber"></param>
+        /// <returns></returns>
         public async Task<IActionResult> EditLocation(string postcode, string street, int binNumber)
         {
             // Get latest reading
@@ -108,6 +116,11 @@ namespace Bindicator.Controllers
             return View(viewModel);
         }
 
+        /// <summary>
+        /// Updates the location of a bin based on the provided model.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> EditLocation(EditLocationViewModel model)
         {
@@ -126,7 +139,6 @@ namespace Bindicator.Controllers
             return RedirectToAction("Map");
         }
 
-
         /// <summary>
         /// Seeds the database with initial data.
         /// </summary>
@@ -137,6 +149,5 @@ namespace Bindicator.Controllers
             await DbSeeder.SeedAsync(_context);
             return RedirectToAction("Index"); // or return Json if you're using AJAX
         }
-
     }
 }

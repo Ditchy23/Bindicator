@@ -1,5 +1,8 @@
 ﻿namespace Bindicator.Models
 {
+    /// <summary>
+    /// Represents the result of a bin prediction.
+    /// </summary>
     public class BinPredictionResult
     {
         public string Postcode { get; set; } = string.Empty;

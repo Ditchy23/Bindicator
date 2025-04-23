@@ -37,15 +37,20 @@ namespace Bindicator.ViewModels
         /// </summary>
         public List<SpikePoint> Spikes { get; set; } = new();
 
-        // Prediction
+        /// <summary>
+        /// Gets or sets the predicted date when the bin will be full based on linear regression.
+        /// </summary>
         public DateTime? PredictedFullDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days until the bin is expected to be full.
+        /// </summary>
         public double? DaysToFull { get; set; }
 
         /// <summary>
         /// Gets or sets the list of warnings related to the bin's status.
         /// </summary>
         public List<string> Warnings { get; set; } = new();
-
     }
 
     /// <summary>

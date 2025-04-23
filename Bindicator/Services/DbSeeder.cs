@@ -2,8 +2,14 @@
 using Bindicator.Models;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Class to seed the database with initial data.
+/// </summary>
 public class DbSeeder
 {
+    /// <summary>
+    /// Seeds the database with initial data.
+    /// </summary>
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
