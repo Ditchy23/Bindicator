@@ -107,6 +107,12 @@ public class MqttSubscriberService : BackgroundService
 
                 await db.SaveChangesAsync(stoppingToken);
 
+                // Notify clients to update the trend view for this bin:
+                await _hubContext.Clients
+                    .All
+                    .SendAsync("ReceiveTrendUpdate", postcode, street, binNumber);
+
+                // Notify clients to update the bin table:
                 await _hubContext.Clients.All.SendAsync("ReceiveBinUpdate");
             }
             catch (Exception ex)
@@ -130,7 +136,5 @@ public class MqttSubscriberService : BackgroundService
 
         // Keep service running
         await Task.Delay(Timeout.Infinite, stoppingToken);
-
-        
     }
 }

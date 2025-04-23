@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Mqtt\" />
+    <Compile Remove="Mqtt\**" />
+    <Content Remove="Mqtt\**" />
+    <EmbeddedResource Remove="Mqtt\**" />
+    <None Remove="Mqtt\**" />
   </ItemGroup>
 
   <ItemGroup>
