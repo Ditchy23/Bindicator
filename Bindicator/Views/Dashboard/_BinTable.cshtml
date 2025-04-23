@@ -33,6 +33,18 @@
                asp-route-binNumber="@bin.BinNumber">
                 View Trend
             </a>
+            @* Only show the Edit button if lat/lon is missing or zero *@
+            @if (bin.Latitude == 0 && bin.Longitude == 0)
+            {
+                <a asp-controller="Dashboard"
+                   asp-action="EditLocation"
+                   asp-route-postcode="@bin.Postcode"
+                   asp-route-street="@bin.Street"
+                   asp-route-binNumber="@bin.BinNumber"
+                   class="btn btn-warning btn-sm ms-2">
+                    Set Location
+                </a>
+            }
         </td>
     </tr>
 }

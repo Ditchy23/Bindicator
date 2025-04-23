@@ -39,6 +39,18 @@ else
     </div>
 }
 
+@if (Model.Warnings.Any())
+{
+    <div class="alert alert-warning">
+        <ul>
+            @foreach (var warning in Model.Warnings)
+            {
+                <li>@warning</li>
+            }
+        </ul>
+    </div>
+}
+
 @section Scripts{
 <!-- Chart.js & Annotations plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>

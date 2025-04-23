@@ -1,0 +1,20 @@
+﻿@using Bindicator.ViewModels
+
+@model EditLocationViewModel
+
+<h2>Edit Bin Location</h2>
+
+<form asp-action="EditLocation" method="post">
+    <input type="hidden" asp-for="Postcode" />
+    <input type="hidden" asp-for="Street" />
+    <input type="hidden" asp-for="BinNumber" />
+    <div>
+        <label>Latitude</label>
+        <input asp-for="Latitude" class="form-control" />
+    </div>
+    <div>
+        <label>Longitude</label>
+        <input asp-for="Longitude" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Save</button>
+</form>

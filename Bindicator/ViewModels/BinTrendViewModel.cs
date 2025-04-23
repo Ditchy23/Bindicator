@@ -40,6 +40,12 @@ namespace Bindicator.ViewModels
         // Prediction
         public DateTime? PredictedFullDate { get; set; }
         public double? DaysToFull { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of warnings related to the bin's status.
+        /// </summary>
+        public List<string> Warnings { get; set; } = new();
+
     }
 
     /// <summary>

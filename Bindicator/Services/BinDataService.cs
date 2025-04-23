@@ -52,11 +52,12 @@ namespace Bindicator.Services
                                  Density = sensor.Density,
                                  Timestamp = sensor.Timestamp,
                                  Temperature = env?.Temperature,
-                                 Humidity = env?.Humidity
+                                 Humidity = env?.Humidity,
+                                 Latitude = sensor.Latitude,
+                                 Longitude = sensor.Longitude
                              };
 
             return viewModels.ToList();
         }
-
     }
 }

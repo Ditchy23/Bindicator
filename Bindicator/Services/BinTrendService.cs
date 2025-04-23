@@ -70,6 +70,29 @@ namespace Bindicator.Services
                 }
             }
 
+            var warnings = new List<string>();
+
+            var latestSensor = readings.LastOrDefault();
+            var latestEnv = envReadings.LastOrDefault();
+
+            if (latestEnv != null && latestEnv.Temperature > 40 && latestEnv.Humidity < 25)
+                warnings.Add("🔥 Warning: High temperature and low humidity detected. Fire risk!");
+
+            if (latestEnv != null && latestEnv.Temperature > 20 && latestEnv.Temperature < 35 && latestEnv.Humidity > 70)
+                warnings.Add("🦠 Warning: Warm and humid conditions. Increased risk of bacteria/mold.");
+
+            if (latestSensor != null && latestSensor.Weight > 22)
+                warnings.Add("⚠️ Warning: Bin is nearly overloaded. Consider early collection.");
+            
+            if (latestSensor != null && latestSensor.FillLevel > 85)
+                warnings.Add("🚨 Notice: Bin is nearly full.");
+
+            if (latestEnv != null && latestEnv.Temperature < 0)
+                warnings.Add("❄️ Notice: Freezing detected. Check for blockages.");
+
+            if (latestEnv != null && latestEnv.Humidity > 90)
+                warnings.Add("💧 Notice: High humidity detected in bin.");
+
             return new BinTrendViewModel
             {
                 Postcode = postcode,
@@ -78,7 +101,8 @@ namespace Bindicator.Services
                 Readings = readings,
                 EnvironmentReadings = envReadings,
                 PredictedFullDate = predictedDate,
-                DaysToFull = daysToFull
+                DaysToFull = daysToFull,
+                Warnings = warnings
             };
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Bindicator.Data;
 using Bindicator.Services;
+using Bindicator.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -85,7 +86,51 @@ namespace Bindicator.Controllers
             return View(bins);
         }
 
-        // Seed data
+        public async Task<IActionResult> EditLocation(string postcode, string street, int binNumber)
+        {
+            // Get latest reading
+            var reading = await _context.SensorReadings
+                .Where(b => b.Postcode == postcode && b.Street == street && b.BinNumber == binNumber)
+                .OrderByDescending(b => b.Timestamp)
+                .FirstOrDefaultAsync();
+
+            if (reading == null) return NotFound();
+
+            var viewModel = new EditLocationViewModel
+            {
+                Postcode = postcode,
+                Street = street,
+                BinNumber = binNumber,
+                Latitude = reading.Latitude,
+                Longitude = reading.Longitude
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditLocation(EditLocationViewModel model)
+        {
+            // Update all readings (or just latest) for this bin
+            var readings = await _context.SensorReadings
+                .Where(b => b.Postcode == model.Postcode && b.Street == model.Street && b.BinNumber == model.BinNumber)
+                .ToListAsync();
+
+            foreach (var r in readings)
+            {
+                r.Latitude = model.Latitude;
+                r.Longitude = model.Longitude;
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Map");
+        }
+
+
+        /// <summary>
+        /// Seeds the database with initial data.
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> SeedData()
         {
