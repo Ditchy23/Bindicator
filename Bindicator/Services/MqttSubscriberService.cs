@@ -1,9 +1,10 @@
-﻿using System.Text;
-using System.Text.Json;
-using MQTTnet;
-using Bindicator.Data;
+﻿using Bindicator.Data;
 using Bindicator.Models;
+using Microsoft.AspNetCore.SignalR;
+using MQTTnet;
 using System.Buffers;
+using System.Text;
+using System.Text.Json;
 
 namespace Bindicator.Services;
 
@@ -13,14 +14,16 @@ namespace Bindicator.Services;
 public class MqttSubscriberService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IHubContext<Bindicator.Hubs.BinStatusHub> _hubContext;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MqttSubscriberService"/> class.
     /// </summary>
     /// <param name="scopeFactory">The service scope factory to create scopes for database operations.</param>
-    public MqttSubscriberService(IServiceScopeFactory scopeFactory)
+    public MqttSubscriberService(IServiceScopeFactory scopeFactory, IHubContext<Bindicator.Hubs.BinStatusHub> hubContext)
     {
         _scopeFactory = scopeFactory;
+        _hubContext = hubContext;
     }
 
     /// <summary>
@@ -103,6 +106,8 @@ public class MqttSubscriberService : BackgroundService
                 }
 
                 await db.SaveChangesAsync(stoppingToken);
+
+                await _hubContext.Clients.All.SendAsync("ReceiveBinUpdate");
             }
             catch (Exception ex)
             {
@@ -125,5 +130,7 @@ public class MqttSubscriberService : BackgroundService
 
         // Keep service running
         await Task.Delay(Timeout.Infinite, stoppingToken);
+
+        
     }
 }

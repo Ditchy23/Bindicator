@@ -58,15 +58,36 @@
         document.getElementById('binFilter').addEventListener('blur', () => isFiltering = false);
         document.getElementById('binFilter').addEventListener('keyup', applyFilter);
 
-        setInterval(() => {
-            if (!isFiltering) {
-                fetch('/Dashboard/GetLatestBins')
-                    .then(res => res.text())
-                    .then(html => {
-                        document.getElementById('binTableBody').innerHTML = html;
-                        applyFilter(); // Re-apply filtering after update
-                    });
-            }
-        }, 15000);
+            // Connect to the SignalR hub
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/binStatusHub")
+            .build();
+
+        connection.on("ReceiveBinUpdate", function () {
+            // Reload the bin table when a message is received
+            fetch('/Dashboard/GetLatestBins')
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('binTableBody').innerHTML = html;
+                    // Optionally, re-apply filtering if you have it
+                    if (typeof applyFilter === "function") applyFilter();
+                });
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        // Commented out for SignalR integration
+        // setInterval(() => {
+        //     if (!isFiltering) {
+        //         fetch('/Dashboard/GetLatestBins')
+        //             .then(res => res.text())
+        //             .then(html => {
+        //                 document.getElementById('binTableBody').innerHTML = html;
+        //                 applyFilter(); // Re-apply filtering after update
+        //             });
+        //     }
+        // }, 15000);
     </script>
 }

@@ -15,6 +15,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add services for SignalR
+builder.Services.AddSignalR();
+
 // Register background service before building the app
 builder.Services.AddHostedService<MqttSubscriberService>();
 builder.Services.AddScoped<BinDataService>();
@@ -23,11 +26,7 @@ builder.Services.AddScoped<DbSeeder>();
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//    await DbSeeder.SeedAsync(dbContext);
-//}
+app.MapHub<Bindicator.Hubs.BinStatusHub>("/binStatusHub");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
