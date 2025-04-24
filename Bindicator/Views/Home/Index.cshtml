@@ -3,39 +3,41 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Bindicator</h1>
+    <h1 class="display-4">Bindicator prototype</h1>
     <h2>Smart bins. Smarter cities</h2>
 </div>
-<h3>Current features:</h3>
+<h3>Prototype features:</h3>
     <ul>
-    <li>Real-time fill level monitoring</li>
+    <li>Real-time data monitoring</li>
+    <li>Integration with HiveMQ MQTT and SignalR for asyncronous notifications</li>
     <li>Weight and density measurement</li>
     <li>Temperature and humidity tracking</li>
-    <li>Data visualization on a map</li>
+    <li>Bin location and route plotting via Azure Maps Atlas API</li>
     <li>Customisable alerts and notifications</li>
-    <li>Integration with existing waste management systems</li>
     <li>User-friendly dashboard for monitoring and management</li>
 </ul>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card mb-4 shadow-sm">
             <div class="card-header">
                 <h4 class="my-0 font-weight-normal">Dashboard</h4>
             </div>
             <div class="card-body">
                 <p class="card-text">View the status of all bins in your area.</p>
-                <a href="@Url.Action("Index", "Dashboard")" class="btn btn-primary">Go to Dashboard</a>
+                <p class="card-text">Real-time senor data updates.</p>
+                <a href="@Url.Action("Index", "Dashboard")" class="btn btn-primary">Dashboard</a>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card mb-4 shadow-sm">
             <div class="card-header">
                 <h4 class="my-0 font-weight-normal">Map</h4>
             </div>
             <div class="card-body">
                 <p class="card-text">View the location of all bins on a map.</p>
-                <a href="@Url.Action("Map", "Dashboard")" class="btn btn-primary">Go to Map</a>
+                <p class="card-text">Generate collection routes.</p>
+                <a href="@Url.Action("Map", "Dashboard")" class="btn btn-primary">Map</a>
             </div>
         </div>
     </div>
