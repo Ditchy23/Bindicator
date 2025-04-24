@@ -1,6 +1,7 @@
 ﻿using Bindicator.Data;
 using Bindicator.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 /// <summary>
 /// Class to seed the database with initial data.
@@ -19,153 +20,120 @@ public class DbSeeder
 
         var now = DateTime.UtcNow;
 
-        var sensorData = new List<SensorData>
+        // Center coordinates for each postcode
+        var postcodeCoords = new Dictionary<string, (double Lat, double Lon)>
         {
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 42.73f, Weight = 10.18f, Density = 0.66f, Timestamp = now.AddDays(-0), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 86.67f, Weight = 10.17f, Density = 1.06f, Timestamp = now.AddDays(-1), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 52.58f, Weight = 8.83f, Density = 0.84f, Timestamp = now.AddDays(-2), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 43.51f, Weight = 5.06f, Density = 1.52f, Timestamp = now.AddDays(-3), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 18.99f, Weight = 10.54f, Density = 1.47f, Timestamp = now.AddDays(-4), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 73.31f, Weight = 6.68f, Density = 0.91f, Timestamp = now.AddDays(-5), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 55.41f, Weight = 5.17f, Density = 1.33f, Timestamp = now.AddDays(-6), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 28.14f, Weight = 9.52f, Density = 0.78f, Timestamp = now.AddDays(-7), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 85.79f, Weight = 15.46f, Density = 1.44f, Timestamp = now.AddDays(-8), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 61.84f, Weight = 19.07f, Density = 0.99f, Timestamp = now.AddDays(-9), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 59.39f, Weight = 13.06f, Density = 1.44f, Timestamp = now.AddDays(-10), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 55.75f, Weight = 19.44f, Density = 0.9f, Timestamp = now.AddDays(-11), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 67.49f, Weight = 6.57f, Density = 1.26f, Timestamp = now.AddDays(-12), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, FillLevel = 53.6f, Weight = 11.36f, Density = 0.83f, Timestamp = now.AddDays(-13), Latitude = 54.5631, Longitude = -1.3123 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 59.16f, Weight = 8.02f, Density = 1.28f, Timestamp = now.AddDays(-0), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 67.48f, Weight = 9.24f, Density = 1.65f, Timestamp = now.AddDays(-1), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 38.78f, Weight = 14.69f, Density = 0.89f, Timestamp = now.AddDays(-2), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 52.0f, Weight = 5.5f, Density = 0.83f, Timestamp = now.AddDays(-3), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 59.99f, Weight = 17.25f, Density = 1.48f, Timestamp = now.AddDays(-4), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 47.01f, Weight = 15.08f, Density = 1.5f, Timestamp = now.AddDays(-5), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 88.16f, Weight = 9.82f, Density = 0.74f, Timestamp = now.AddDays(-6), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 86.39f, Weight = 14.57f, Density = 1.2f, Timestamp = now.AddDays(-7), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 54.82f, Weight = 6.7f, Density = 1.11f, Timestamp = now.AddDays(-8), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 84.91f, Weight = 6.86f, Density = 0.77f, Timestamp = now.AddDays(-9), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 36.7f, Weight = 7.71f, Density = 1.1f, Timestamp = now.AddDays(-10), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 79.88f, Weight = 11.15f, Density = 0.62f, Timestamp = now.AddDays(-11), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 42.21f, Weight = 16.17f, Density = 0.79f, Timestamp = now.AddDays(-12), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, FillLevel = 79.32f, Weight = 9.11f, Density = 1.09f, Timestamp = now.AddDays(-13), Latitude = 54.5662, Longitude = -1.315 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 25.82f, Weight = 16.94f, Density = 0.79f, Timestamp = now.AddDays(-0), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 71.44f, Weight = 5.42f, Density = 1.34f, Timestamp = now.AddDays(-1), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 53.29f, Weight = 12.36f, Density = 1.53f, Timestamp = now.AddDays(-2), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 87.14f, Weight = 6.05f, Density = 0.68f, Timestamp = now.AddDays(-3), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 33.27f, Weight = 7.29f, Density = 0.98f, Timestamp = now.AddDays(-4), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 68.52f, Weight = 9.03f, Density = 0.69f, Timestamp = now.AddDays(-5), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 67.57f, Weight = 9.38f, Density = 1.0f, Timestamp = now.AddDays(-6), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 72.25f, Weight = 13.89f, Density = 1.46f, Timestamp = now.AddDays(-7), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 70.85f, Weight = 9.47f, Density = 1.08f, Timestamp = now.AddDays(-8), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 53.18f, Weight = 14.42f, Density = 1.66f, Timestamp = now.AddDays(-9), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 40.85f, Weight = 13.5f, Density = 1.44f, Timestamp = now.AddDays(-10), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 17.87f, Weight = 7.33f, Density = 0.8f, Timestamp = now.AddDays(-11), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 88.3f, Weight = 19.91f, Density = 1.69f, Timestamp = now.AddDays(-12), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, FillLevel = 84.63f, Weight = 9.28f, Density = 1.09f, Timestamp = now.AddDays(-13), Latitude = 54.5688, Longitude = -1.311 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 81.03f, Weight = 14.81f, Density = 1.17f, Timestamp = now.AddDays(-0), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 14.26f, Weight = 18.54f, Density = 0.72f, Timestamp = now.AddDays(-1), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 55.07f, Weight = 16.67f, Density = 1.05f, Timestamp = now.AddDays(-2), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 31.92f, Weight = 7.27f, Density = 0.94f, Timestamp = now.AddDays(-3), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 78.47f, Weight = 16.57f, Density = 0.75f, Timestamp = now.AddDays(-4), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 16.61f, Weight = 13.25f, Density = 1.14f, Timestamp = now.AddDays(-5), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 23.24f, Weight = 9.14f, Density = 1.2f, Timestamp = now.AddDays(-6), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 30.68f, Weight = 17.82f, Density = 0.74f, Timestamp = now.AddDays(-7), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 31.93f, Weight = 10.01f, Density = 0.69f, Timestamp = now.AddDays(-8), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 39.06f, Weight = 18.17f, Density = 1.42f, Timestamp = now.AddDays(-9), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 93.66f, Weight = 18.12f, Density = 1.02f, Timestamp = now.AddDays(-10), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 13.33f, Weight = 10.87f, Density = 1.29f, Timestamp = now.AddDays(-11), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 69.59f, Weight = 14.58f, Density = 1.38f, Timestamp = now.AddDays(-12), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, FillLevel = 77.18f, Weight = 14.19f, Density = 1.56f, Timestamp = now.AddDays(-13), Latitude = 54.5645, Longitude = -1.3105 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 53.86f, Weight = 11.05f, Density = 0.95f, Timestamp = now.AddDays(-0), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 14.79f, Weight = 12.42f, Density = 0.82f, Timestamp = now.AddDays(-1), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 33.24f, Weight = 7.72f, Density = 0.84f, Timestamp = now.AddDays(-2), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 84.04f, Weight = 18.1f, Density = 1.42f, Timestamp = now.AddDays(-3), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 22.01f, Weight = 14.15f, Density = 0.9f, Timestamp = now.AddDays(-4), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 80.62f, Weight = 14.88f, Density = 1.13f, Timestamp = now.AddDays(-5), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 81.12f, Weight = 11.33f, Density = 1.43f, Timestamp = now.AddDays(-6), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 91.12f, Weight = 9.76f, Density = 0.94f, Timestamp = now.AddDays(-7), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 16.62f, Weight = 6.71f, Density = 1.06f, Timestamp = now.AddDays(-8), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 38.91f, Weight = 16.14f, Density = 1.67f, Timestamp = now.AddDays(-9), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 89.78f, Weight = 6.35f, Density = 1.67f, Timestamp = now.AddDays(-10), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 52.5f, Weight = 9.92f, Density = 1.67f, Timestamp = now.AddDays(-11), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 68.52f, Weight = 19.99f, Density = 1.51f, Timestamp = now.AddDays(-12), Latitude = 54.5671, Longitude = -1.3161 },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, FillLevel = 29.88f, Weight = 17.96f, Density = 1.66f, Timestamp = now.AddDays(-13), Latitude = 54.5671, Longitude = -1.3161 },
+            { "TS16", (54.525079, -1.3649298) },
+            { "TS17", (54.5313629, -1.2914754) },
+            { "TS18", (54.5529822, -1.3193432) }
         };
 
-        var environmentData = new List<EnvironmentData>
+        // Streets for each postcode (you can adjust these or add more)
+        var streetNames = new Dictionary<string, string[]>
         {
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 22.26f, Humidity = 40.36f, LowTemp = 8.17f, HighTemp = 34.92f, Timestamp = now.AddDays(-0) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 14.9f, Humidity = 63.55f, LowTemp = 7.91f, HighTemp = 26.58f, Timestamp = now.AddDays(-1) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 30.28f, Humidity = 46.94f, LowTemp = 4.4f, HighTemp = 29.61f, Timestamp = now.AddDays(-2) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 11.38f, Humidity = 71.56f, LowTemp = 2.77f, HighTemp = 34.89f, Timestamp = now.AddDays(-3) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 11.63f, Humidity = 71.43f, LowTemp = 9.78f, HighTemp = 34.2f, Timestamp = now.AddDays(-4) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 8.57f, Humidity = 82.9f, LowTemp = 8.84f, HighTemp = 24.26f, Timestamp = now.AddDays(-5) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 18.83f, Humidity = 48.55f, LowTemp = 2.36f, HighTemp = 33.73f, Timestamp = now.AddDays(-6) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 29.93f, Humidity = 57.67f, LowTemp = 3.19f, HighTemp = 25.56f, Timestamp = now.AddDays(-7) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 6.4f, Humidity = 87.92f, LowTemp = 5.34f, HighTemp = 32.68f, Timestamp = now.AddDays(-8) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 7.48f, Humidity = 65.14f, LowTemp = 4.21f, HighTemp = 37.35f, Timestamp = now.AddDays(-9) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 21.61f, Humidity = 73.55f, LowTemp = 6.04f, HighTemp = 32.82f, Timestamp = now.AddDays(-10) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 19.71f, Humidity = 52.28f, LowTemp = 3.15f, HighTemp = 24.73f, Timestamp = now.AddDays(-11) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 31.25f, Humidity = 80.97f, LowTemp = 3.72f, HighTemp = 31.38f, Timestamp = now.AddDays(-12) },
-            new() { Postcode = "TS16", Street = "Formby Walk", BinNumber = 1, Temperature = 6.44f, Humidity = 84.67f, LowTemp = 3.29f, HighTemp = 26.96f, Timestamp = now.AddDays(-13) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 14.73f, Humidity = 81.22f, LowTemp = 5.48f, HighTemp = 35.4f, Timestamp = now.AddDays(-0) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 12.86f, Humidity = 76.32f, LowTemp = 7.15f, HighTemp = 24.16f, Timestamp = now.AddDays(-1) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 8.03f, Humidity = 58.39f, LowTemp = 9.47f, HighTemp = 23.27f, Timestamp = now.AddDays(-2) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 8.5f, Humidity = 60.79f, LowTemp = 6.17f, HighTemp = 22.46f, Timestamp = now.AddDays(-3) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 22.68f, Humidity = 40.49f, LowTemp = 9.09f, HighTemp = 23.65f, Timestamp = now.AddDays(-4) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 33.08f, Humidity = 64.19f, LowTemp = 5.45f, HighTemp = 35.59f, Timestamp = now.AddDays(-5) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 9.13f, Humidity = 48.12f, LowTemp = 4.89f, HighTemp = 23.84f, Timestamp = now.AddDays(-6) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 20.95f, Humidity = 69.82f, LowTemp = 8.35f, HighTemp = 29.65f, Timestamp = now.AddDays(-7) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 10.63f, Humidity = 78.28f, LowTemp = 5.86f, HighTemp = 37.64f, Timestamp = now.AddDays(-8) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 8.02f, Humidity = 76.53f, LowTemp = 5.04f, HighTemp = 22.57f, Timestamp = now.AddDays(-9) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 21.87f, Humidity = 57.31f, LowTemp = 4.99f, HighTemp = 24.66f, Timestamp = now.AddDays(-10) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 12.81f, Humidity = 44.37f, LowTemp = 3.83f, HighTemp = 26.56f, Timestamp = now.AddDays(-11) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 15.2f, Humidity = 85.37f, LowTemp = 7.94f, HighTemp = 37.77f, Timestamp = now.AddDays(-12) },
-            new() { Postcode = "TS17", Street = "Oakwood Drive", BinNumber = 2, Temperature = 19.44f, Humidity = 74.65f, LowTemp = 3.86f, HighTemp = 23.37f, Timestamp = now.AddDays(-13) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 18.45f, Humidity = 40.37f, LowTemp = 6.99f, HighTemp = 36.99f, Timestamp = now.AddDays(-0) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 16.0f, Humidity = 54.08f, LowTemp = 8.67f, HighTemp = 32.76f, Timestamp = now.AddDays(-1) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 21.95f, Humidity = 89.02f, LowTemp = 2.82f, HighTemp = 37.36f, Timestamp = now.AddDays(-2) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 33.14f, Humidity = 69.96f, LowTemp = 2.72f, HighTemp = 26.32f, Timestamp = now.AddDays(-3) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 17.69f, Humidity = 80.87f, LowTemp = 4.35f, HighTemp = 37.52f, Timestamp = now.AddDays(-4) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 22.9f, Humidity = 59.32f, LowTemp = 7.54f, HighTemp = 28.86f, Timestamp = now.AddDays(-5) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 13.48f, Humidity = 56.7f, LowTemp = 6.0f, HighTemp = 31.4f, Timestamp = now.AddDays(-6) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 19.66f, Humidity = 46.29f, LowTemp = 8.32f, HighTemp = 35.77f, Timestamp = now.AddDays(-7) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 7.11f, Humidity = 64.33f, LowTemp = 6.21f, HighTemp = 25.32f, Timestamp = now.AddDays(-8) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 27.84f, Humidity = 46.41f, LowTemp = 4.16f, HighTemp = 32.47f, Timestamp = now.AddDays(-9) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 20.09f, Humidity = 40.74f, LowTemp = 9.94f, HighTemp = 22.86f, Timestamp = now.AddDays(-10) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 25.72f, Humidity = 53.12f, LowTemp = 5.47f, HighTemp = 30.77f, Timestamp = now.AddDays(-11) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 7.74f, Humidity = 57.02f, LowTemp = 7.55f, HighTemp = 29.68f, Timestamp = now.AddDays(-12) },
-            new() { Postcode = "TS18", Street = "Cedar Avenue", BinNumber = 3, Temperature = 17.5f, Humidity = 78.05f, LowTemp = 6.02f, HighTemp = 24.71f, Timestamp = now.AddDays(-13) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 9.49f, Humidity = 60.0f, LowTemp = 4.29f, HighTemp = 29.93f, Timestamp = now.AddDays(-0) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 9.52f, Humidity = 89.83f, LowTemp = 8.92f, HighTemp = 25.47f, Timestamp = now.AddDays(-1) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 18.64f, Humidity = 57.34f, LowTemp = 2.76f, HighTemp = 26.89f, Timestamp = now.AddDays(-2) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 20.28f, Humidity = 81.5f, LowTemp = 5.52f, HighTemp = 31.8f, Timestamp = now.AddDays(-3) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 32.04f, Humidity = 55.61f, LowTemp = 7.55f, HighTemp = 35.74f, Timestamp = now.AddDays(-4) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 13.46f, Humidity = 53.27f, LowTemp = 3.16f, HighTemp = 25.63f, Timestamp = now.AddDays(-5) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 9.09f, Humidity = 50.07f, LowTemp = 3.51f, HighTemp = 22.95f, Timestamp = now.AddDays(-6) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 8.57f, Humidity = 50.86f, LowTemp = 4.4f, HighTemp = 24.48f, Timestamp = now.AddDays(-7) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 22.85f, Humidity = 50.83f, LowTemp = 8.88f, HighTemp = 27.02f, Timestamp = now.AddDays(-8) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 9.23f, Humidity = 60.96f, LowTemp = 4.76f, HighTemp = 32.04f, Timestamp = now.AddDays(-9) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 26.73f, Humidity = 65.22f, LowTemp = 4.05f, HighTemp = 31.16f, Timestamp = now.AddDays(-10) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 34.03f, Humidity = 76.87f, LowTemp = 6.85f, HighTemp = 31.17f, Timestamp = now.AddDays(-11) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 30.48f, Humidity = 57.76f, LowTemp = 8.53f, HighTemp = 31.4f, Timestamp = now.AddDays(-12) },
-            new() { Postcode = "TS16", Street = "Alder Crescent", BinNumber = 4, Temperature = 31.78f, Humidity = 64.58f, LowTemp = 9.45f, HighTemp = 26.05f, Timestamp = now.AddDays(-13) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 16.46f, Humidity = 73.03f, LowTemp = 9.13f, HighTemp = 30.05f, Timestamp = now.AddDays(-0) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 20.31f, Humidity = 74.21f, LowTemp = 8.49f, HighTemp = 23.99f, Timestamp = now.AddDays(-1) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 15.56f, Humidity = 86.7f, LowTemp = 3.39f, HighTemp = 26.35f, Timestamp = now.AddDays(-2) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 8.2f, Humidity = 79.22f, LowTemp = 6.28f, HighTemp = 26.28f, Timestamp = now.AddDays(-3) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 29.0f, Humidity = 89.98f, LowTemp = 7.18f, HighTemp = 28.52f, Timestamp = now.AddDays(-4) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 29.37f, Humidity = 61.77f, LowTemp = 8.29f, HighTemp = 23.62f, Timestamp = now.AddDays(-5) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 33.83f, Humidity = 48.55f, LowTemp = 3.73f, HighTemp = 27.97f, Timestamp = now.AddDays(-6) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 28.1f, Humidity = 58.58f, LowTemp = 6.81f, HighTemp = 36.85f, Timestamp = now.AddDays(-7) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 19.18f, Humidity = 55.28f, LowTemp = 5.31f, HighTemp = 24.63f, Timestamp = now.AddDays(-8) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 11.3f, Humidity = 51.81f, LowTemp = 7.46f, HighTemp = 25.08f, Timestamp = now.AddDays(-9) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 30.33f, Humidity = 48.8f, LowTemp = 5.07f, HighTemp = 29.71f, Timestamp = now.AddDays(-10) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 27.8f, Humidity = 74.1f, LowTemp = 8.05f, HighTemp = 27.02f, Timestamp = now.AddDays(-11) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 17.11f, Humidity = 88.35f, LowTemp = 3.53f, HighTemp = 28.96f, Timestamp = now.AddDays(-12) },
-            new() { Postcode = "TS17", Street = "Birch Lane", BinNumber = 5, Temperature = 18.95f, Humidity = 47.7f, LowTemp = 4.2f, HighTemp = 30.03f, Timestamp = now.AddDays(-13) },
+            { "TS16", new[] { "Formby Walk", "Alder Crescent", "Beech Road", "Maple Avenue", "Sycamore Street", "Poplar Drive", "Willow Close", "Hawthorn Way", "Elm Court", "Rowan View" } },
+            { "TS17", new[] { "Oakwood Drive", "Birch Lane", "Hazel Grove", "Chestnut Place", "Spruce Gardens", "Ash Terrace", "Cedar Lane", "Pine Avenue", "Lime Crescent", "Fir Walk" } },
+            { "TS18", new[] { "Cedar Avenue", "Holly Drive", "Ivy Road", "Juniper Close", "Laurel Street", "Magnolia Place", "Olive Court", "Palm Avenue", "Quince Grove", "Sycamore Walk" } }
         };
+
+        var random = new Random(1234);
+        var sensorData = new List<SensorData>();
+        var environmentData = new List<EnvironmentData>();
+
+        foreach (var postcode in postcodeCoords.Keys)
+        {
+            var (centerLat, centerLon) = postcodeCoords[postcode];
+            var streets = streetNames[postcode];
+
+            for (int binIdx = 0; binIdx < 10; binIdx++)
+            {
+                string street = streets[binIdx % streets.Length];
+                int binNumber = binIdx + 1;
+
+                // Unique but plausible offsets
+                double latOffset = (random.NextDouble() - 0.5) * 0.012;  // about ±0.006 deg
+                double lonOffset = (random.NextDouble() - 0.5) * 0.02;   // about ±0.01 deg
+
+                double binLat = centerLat + latOffset;
+                double binLon = centerLon + lonOffset;
+
+                float fill = random.Next(10, 50);
+                float weight = random.Next(5, 15);
+
+                for (int day = 27; day >= 0; day--)
+                {
+                    var timestamp = now.AddDays(-day);
+
+                    // Simulate fill/weight rising, with occasional resets (collection)
+                    if (random.NextDouble() < 0.15 && day != 27)
+                    {
+                        fill = random.Next(5, 20);
+                        weight = random.Next(2, 7);
+                    }
+                    else
+                    {
+                        fill = Math.Min(fill + (float)(random.NextDouble() * 10), 100);
+                        weight = Math.Min(weight + (float)(random.NextDouble() * 2.5), 25);
+                    }
+
+                    // Insert some spikes for warning demonstration
+                    float density = (float)Math.Round(random.NextDouble() * 1.5 + 0.5, 2);
+
+                    // Occasionally trigger "near full" warnings
+                    if (random.NextDouble() < 0.12)
+                        fill = random.Next(85, 100);
+
+                    sensorData.Add(new SensorData
+                    {
+                        Postcode = postcode,
+                        Street = street,
+                        BinNumber = binNumber,
+                        FillLevel = fill,
+                        Weight = weight,
+                        Density = density,
+                        Timestamp = timestamp,
+                        Latitude = binLat,
+                        Longitude = binLon
+                    });
+
+                    // Simulate environment readings
+                    float temp = (float)(random.NextDouble() * 30 - 5);
+                    float humidity = (float)(random.NextDouble() * 70 + 20);
+                    float lowTemp = temp - (float)(random.NextDouble() * 3);
+                    float highTemp = temp + (float)(random.NextDouble() * 5);
+
+                    // Occasionally force "warning" values for demo
+                    if (random.NextDouble() < 0.10)
+                    {
+                        temp = 42; humidity = 18;
+                    }
+                    if (random.NextDouble() < 0.10)
+                    {
+                        temp = 25; humidity = 78;
+                    }
+                    if (random.NextDouble() < 0.05)
+                    {
+                        temp = -2;
+                    }
+                    if (random.NextDouble() < 0.08)
+                    {
+                        humidity = 92;
+                    }
+
+                    environmentData.Add(new EnvironmentData
+                    {
+                        Postcode = postcode,
+                        Street = street,
+                        BinNumber = binNumber,
+                        Temperature = temp,
+                        Humidity = humidity,
+                        LowTemp = lowTemp,
+                        HighTemp = highTemp,
+                        Timestamp = timestamp
+                    });
+                }
+            }
+        }
 
         context.SensorReadings.AddRange(sensorData);
         context.EnvironmentReadings.AddRange(environmentData);
