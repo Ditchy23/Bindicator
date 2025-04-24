@@ -21,7 +21,49 @@
     <i class="fas fa-arrow-left"></i> Back to Dashboard
 </a>
 
-<canvas id="fillChart" width="800" height="400"></canvas>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Fill Level (%)</div>
+            <div class="card-body">
+                <canvas id="fillChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Weight (kg)</div>
+            <div class="card-body">
+                <canvas id="weightChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Density</div>
+            <div class="card-body">
+                <canvas id="densityChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Temperature (°C)</div>
+            <div class="card-body">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Humidity (%)</div>
+            <div class="card-body">
+                <canvas id="humidityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @if (Model.PredictedFullDate.HasValue && Model.DaysToFull.HasValue)
 {
@@ -39,17 +81,36 @@ else
     </div>
 }
 
-@if (Model.Warnings.Any())
+@if (Model.WarningHistory.Any())
 {
-    <div class="alert alert-warning">
-        <ul>
-            @foreach (var warning in Model.Warnings)
-            {
-                <li>@warning</li>
-            }
-        </ul>
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-warning-subtle text-dark">
+            <strong>⚠️ Bin Warnings & Alerts History</strong>
+        </div>
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+                @foreach (var warning in Model.WarningHistory.OrderByDescending(w => w.Timestamp))
+                {
+                    var isRecent = (DateTime.UtcNow - warning.Timestamp).TotalHours < 24;
+                    var alertClass = isRecent ? "alert-warning" : "alert-secondary";
+                    <li class="list-group-item d-flex align-items-center" style="background: inherit;">
+                        <div class="flex-fill">
+                            <span class="me-2">@warning.Message</span>
+                        </div>
+                        <div class="text-muted small text-end" style="min-width: 140px;">
+                            @warning.Timestamp.ToLocalTime().ToString("g")
+                        </div>
+                        @if (isRecent)
+                        {
+                            <span class="badge bg-warning text-dark ms-2">New</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
     </div>
 }
+
 
 @section Scripts{
 <!-- Chart.js & Annotations plugin -->
@@ -57,91 +118,44 @@ else
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
 
 <script>
-    // Register the Chart.js annotation plugin
-    Chart.register(window['chartjs-plugin-annotation']);
+        Chart.register(window['chartjs-plugin-annotation']);
 
-    // Get the 2D rendering context of the canvas element
-    const ctx = document.getElementById('fillChart').getContext('2d');
+         const labels = @Html.Raw(Json.Serialize(labels));
 
-    // Create a new Chart.js line chart
-    const chart = new Chart(ctx, {
-        type: 'line', // Specify the chart type as a line chart
-        data: {
-            labels: @Html.Raw(Json.Serialize(labels)), // X-axis labels (timestamps of readings)
-            datasets: [
-                {
-                    label: 'Fill Level (%)', // Dataset label for fill levels
-                    data: @Html.Raw(Json.Serialize(fillLevels)), // Y-axis data for fill levels
-                    borderColor: 'blue', // Line color
-                    backgroundColor: 'rgba(0, 0, 255, 0.1)', // Fill color under the line
-                    tension: 0.2, // Line tension for smooth curves
-                    fill: false // Disable area fill under the line
-                },
-                {
-                    label: 'Weight (kg)', // Dataset label for weights
-                    data: @Html.Raw(Json.Serialize(weights)), // Y-axis data for weights
-                    borderColor: 'red', // Line color
-                    backgroundColor: 'rgba(255, 0, 0, 0.1)', // Fill color under the line
-                    tension: 0.2, // Line tension for smooth curves
-                    fill: false // Disable area fill under the line
-                },
-                {
-                    label: 'Density', // Dataset label for density
-                    data: @Html.Raw(Json.Serialize(densities)), // Y-axis data for density
-                    borderColor: 'green', // Line color
-                    backgroundColor: 'rgba(0, 128, 0, 0.1)', // Fill color under the line
-                    tension: 0.2, // Line tension for smooth curves
-                    fill: false // Disable area fill under the line
-                },
-                {
-                    label: 'Temperature (°C)', // Dataset label for temperature
-                    data: @Html.Raw(Json.Serialize(temperatures)), // Y-axis data for temperature
-                    borderColor: 'orange', // Line color
-                    backgroundColor: 'rgba(255, 165, 0, 0.1)', // Fill color under the line
-                    tension: 0.2, // Line tension for smooth curves
-                    fill: false // Disable area fill under the line
-                },
-                {
-                    label: 'Humidity (%)', // Dataset label for humidity
-                    data: @Html.Raw(Json.Serialize(humidities)), // Y-axis data for humidity
-                    borderColor: 'purple', // Line color
-                    backgroundColor: 'rgba(128, 0, 128, 0.1)', // Fill color under the line
-                    tension: 0.2, // Line tension for smooth curves
-                    fill: false // Disable area fill under the line
-                }
-            ]
-        },
-        options: {
-            responsive: true, // Make the chart responsive to screen size
-            plugins: {
-                legend: {
-                    position: 'top' // Position the legend at the top of the chart
-                },
-                title: {
-                    display: false // Disable the chart title
-                },
-                annotation: {
-                    annotations: {} // Add spike annotations to the chart, currently disapled
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    }
-                    // No type, Chart.js will treat this as category axis
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Fill Level (%)'
-                    }
-                }
-            }
-        }
-    });
+         const chartConfigs = [
+             { id: "fillChart",     data: @Html.Raw(Json.Serialize(fillLevels)),    label: "Fill Level (%)",    color: "blue" },
+             { id: "weightChart",   data: @Html.Raw(Json.Serialize(weights)),       label: "Weight (kg)",       color: "red" },
+             { id: "densityChart",  data: @Html.Raw(Json.Serialize(densities)),     label: "Density",           color: "green" },
+             { id: "temperatureChart", data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
+             { id: "humidityChart", data: @Html.Raw(Json.Serialize(humidities)),    label: "Humidity (%)",      color: "purple" }
+         ];
+
+         chartConfigs.forEach(cfg => {
+             const ctx = document.getElementById(cfg.id)?.getContext('2d');
+             if (!ctx) return;
+             new Chart(ctx, {
+                 type: 'line',
+                 data: {
+                     labels: labels,
+                     datasets: [{
+                         label: cfg.label,
+                         data: cfg.data,
+                         borderColor: cfg.color,
+                         backgroundColor: 'rgba(0,0,0,0.07)',
+                         tension: 0.2,
+                         fill: false
+                     }]
+                 },
+                 options: {
+                     responsive: true,
+                     plugins: { legend: { display: false } },
+                     scales: {
+                         x: { title: { display: true, text: 'Time' } },
+                         y: { beginAtZero: true, title: { display: true, text: cfg.label } }
+                     }
+                 }
+             });
+         });
 
      // Set up the SignalR connection
         const connection = new signalR.HubConnectionBuilder()

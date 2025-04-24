@@ -50,8 +50,16 @@ namespace Bindicator.ViewModels
         /// <summary>
         /// Gets or sets the list of warnings related to the bin's status.
         /// </summary>
-        public List<string> Warnings { get; set; } = new();
+        public List<WarningEntry> WarningHistory { get; set; } = new();
+
     }
+
+    public class WarningEntry
+    {
+        public DateTime Timestamp { get; set; }
+        public string Message { get; set; } = string.Empty;
+    }
+
 
     /// <summary>
     /// Represents a point in time where a significant change in bin level occurred.

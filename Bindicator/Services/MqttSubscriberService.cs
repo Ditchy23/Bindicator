@@ -51,19 +51,115 @@ public class MqttSubscriberService : BackgroundService
 
                 mqttClient.ApplicationMessageReceivedAsync += async e =>
                 {
-                    // ... [same as before, your message handling code] ...
+                    var topic = e.ApplicationMessage.Topic;
+                    var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload.ToArray());
+
+                    Console.WriteLine("=========================================");
+                    Console.WriteLine("?? MQTT MESSAGE RECEIVED");
+                    Console.WriteLine($"   Topic:   {topic}");
+                    Console.WriteLine($"   Payload: {payload}");
+                    Console.WriteLine("=========================================");
+
+                    // Guard against empty payloads
+                    if (string.IsNullOrWhiteSpace(payload))
+                    {
+                        Console.WriteLine("⚠️  Payload is empty. Skipping.");
+                        return;
+                    }
+
+                    var parts = topic.Split('/');
+                    if (parts.Length < 3)
+                    {
+                        Console.WriteLine("⚠️  Topic does not have enough parts. Skipping.");
+                        return;
+                    }
+
+                    string postcode = parts[0];
+                    string street = parts[1];
+                    if (!int.TryParse(parts[2], out int binNumber))
+                    {
+                        Console.WriteLine("⚠️  BinNumber is not a valid integer. Skipping.");
+                        return;
+                    }
+
+                    using var scope = _scopeFactory.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                    try
+                    {
+                        if (topic.EndsWith("Sensors/Current", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var data = JsonSerializer.Deserialize<SensorData>(payload, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                            if (data == null)
+                            {
+                                Console.WriteLine("⚠️  SensorData deserialization failed.");
+                                return;
+                            }
+
+                            data.Postcode = postcode;
+                            data.Street = street;
+                            data.BinNumber = binNumber;
+                            data.Timestamp = DateTime.UtcNow;
+
+                            db.SensorReadings.Add(data);
+                            Console.WriteLine("💾 SensorData added to DB context.");
+                        }
+                        else if (topic.EndsWith("Environment/Current", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var data = JsonSerializer.Deserialize<EnvironmentData>(payload, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                            if (data == null)
+                            {
+                                Console.WriteLine("⚠️  EnvironmentData deserialization failed.");
+                                return;
+                            }
+
+                            data.Postcode = postcode;
+                            data.Street = street;
+                            data.BinNumber = binNumber;
+                            data.Timestamp = DateTime.UtcNow;
+
+                            db.EnvironmentReadings.Add(data);
+                            Console.WriteLine("💾 EnvironmentData added to DB context.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("⚠️  Topic not recognized as a supported sensor/environment message. Skipping.");
+                            return;
+                        }
+
+                        var changes = await db.SaveChangesAsync(stoppingToken);
+                        Console.WriteLine($"✅ DB changes saved: {changes} row(s) affected.");
+
+                        // Notify SignalR clients
+                        await _hubContext.Clients.All.SendAsync("ReceiveTrendUpdate", postcode, street, binNumber);
+                        await _hubContext.Clients.All.SendAsync("ReceiveBinUpdate");
+
+                        Console.WriteLine("🔔 SignalR notifications sent.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Error saving to DB or sending SignalR: {ex.Message}");
+                    }
                 };
 
                 // Try to connect (may throw if broker is unreachable)
                 await mqttClient.ConnectAsync(mqttClientOptions, stoppingToken);
 
                 var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
-                    .WithTopicFilter(f => f.WithTopic("TS16/#").WithAtLeastOnceQoS())
+                    .WithTopicFilter(f => f.WithTopic("#").WithAtLeastOnceQoS())
                     .Build();
 
                 await mqttClient.SubscribeAsync(mqttSubscribeOptions, stoppingToken);
 
-                Console.WriteLine("✅ Subscribed to TS16/#");
+                Console.WriteLine("✅ #");
 
                 // Wait until cancelled (if connection drops, catch below will handle)
                 await Task.Delay(Timeout.Infinite, stoppingToken);
@@ -78,5 +174,4 @@ public class MqttSubscriberService : BackgroundService
             }
         }
     }
-
 }
