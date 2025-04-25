@@ -20,6 +20,7 @@ public class MqttSubscriberService : BackgroundService
     /// Initializes a new instance of the <see cref="MqttSubscriberService"/> class.
     /// </summary>
     /// <param name="scopeFactory">The service scope factory to create scopes for database operations.</param>
+    /// <param name="hubContext">The SignalR hub context for sending real-time updates to clients.</param>
     public MqttSubscriberService(IServiceScopeFactory scopeFactory, IHubContext<Bindicator.Hubs.BinStatusHub> hubContext)
     {
         _scopeFactory = scopeFactory;
@@ -54,6 +55,7 @@ public class MqttSubscriberService : BackgroundService
                     var topic = e.ApplicationMessage.Topic;
                     var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload.ToArray());
 
+                    // Log the received message for debugging
                     Console.WriteLine("=========================================");
                     Console.WriteLine("?? MQTT MESSAGE RECEIVED");
                     Console.WriteLine($"   Topic:   {topic}");
@@ -67,6 +69,7 @@ public class MqttSubscriberService : BackgroundService
                         return;
                     }
 
+                    // Guard against empty topics
                     var parts = topic.Split('/');
                     if (parts.Length < 3)
                     {
@@ -74,6 +77,7 @@ public class MqttSubscriberService : BackgroundService
                         return;
                     }
 
+                    // Guard against invalid topic format
                     string postcode = parts[0];
                     string street = parts[1];
                     if (!int.TryParse(parts[2], out int binNumber))
@@ -94,6 +98,7 @@ public class MqttSubscriberService : BackgroundService
                                 PropertyNameCaseInsensitive = true
                             });
 
+                            // Guard against null data
                             if (data == null)
                             {
                                 Console.WriteLine("⚠️  SensorData deserialization failed.");
@@ -115,6 +120,7 @@ public class MqttSubscriberService : BackgroundService
                                 PropertyNameCaseInsensitive = true
                             });
 
+                            // Guard against null data
                             if (data == null)
                             {
                                 Console.WriteLine("⚠️  EnvironmentData deserialization failed.");
@@ -131,6 +137,7 @@ public class MqttSubscriberService : BackgroundService
                         }
                         else
                         {
+                            // Unrecognized topic, does not match any known sensor/environment message
                             Console.WriteLine("⚠️  Topic not recognized as a supported sensor/environment message. Skipping.");
                             return;
                         }
@@ -169,7 +176,7 @@ public class MqttSubscriberService : BackgroundService
                 // Log the error
                 Console.WriteLine($"[MQTT] Error: {ex.Message}");
 
-                // Wait a bit before retrying
+                // Wait before retrying
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
         }

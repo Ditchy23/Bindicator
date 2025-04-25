@@ -29,10 +29,10 @@ namespace Bindicator.Controllers
             _context = context;
         }
 
-        /// <summary>
-        /// Displays the dashboard index view with the latest bin statuses.
-        /// </summary>
-        /// <returns>The dashboard index view.</returns>
+        /// <summary>  
+        /// Displays the dashboard index view with the latest bin statuses.  
+        /// </summary>  
+        /// <returns>The dashboard index view.</returns>  
         public async Task<IActionResult> Index()
         {
             try
@@ -40,14 +40,12 @@ namespace Bindicator.Controllers
                 var viewModel = await _binData.GetLatestBinStatusesAsync();
                 return View(viewModel);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // You could log this error to the console, file, or a logger
                 ViewBag.ErrorMessage = "🚫 Unable to load data. Please check your database connection.";
                 return View("NoData");
             }
         }
-
 
         /// <summary>
         /// Displays the trend view for a specific bin.

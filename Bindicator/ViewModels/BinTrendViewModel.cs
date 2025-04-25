@@ -54,9 +54,19 @@ namespace Bindicator.ViewModels
 
     }
 
+    /// <summary>
+    /// Represents a warning entry related to the bin's status.
+    /// </summary>
     public class WarningEntry
     {
+        /// <summary>
+        /// Gets or sets the timestamp of the warning.
+        /// </summary>
         public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning message.
+        /// </summary>
         public string Message { get; set; } = string.Empty;
     }
 

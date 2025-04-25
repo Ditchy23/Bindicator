@@ -152,7 +152,7 @@ else
          const labels = @Html.Raw(Json.Serialize(labels));
 
          const chartConfigs = [
-             { id: "fillChart",     data: @Html.Raw(Json.Serialize(fillLevels)),    label: "Fill Level (%)",    color: "blue" },
+             { id: "fillChart",     data: @Html.Raw(Json.Serialize(fillLevels)), label: "Fill Level (%)",    color: "blue" },
              { id: "weightChart",   data: @Html.Raw(Json.Serialize(weights)),       label: "Weight (kg)",       color: "red" },
              { id: "densityChart",  data: @Html.Raw(Json.Serialize(densities)),     label: "Density",           color: "green" },
              { id: "temperatureChart", data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
@@ -186,7 +186,7 @@ else
              });
          });
 
-     // Set up the SignalR connection
+        // Set up the SignalR connection
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/binStatusHub")
             .build();

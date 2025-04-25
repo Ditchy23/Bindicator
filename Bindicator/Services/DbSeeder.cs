@@ -4,13 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 /// <summary>
-/// Class to seed the database with initial data.
+/// Class responsible for seeding the database with initial data.
 /// </summary>
 public class DbSeeder
 {
     /// <summary>
-    /// Seeds the database with initial data.
+    /// Seeds the database with initial data if it has not been seeded already.
     /// </summary>
+    /// <param name="context">The application's database context.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
@@ -22,19 +24,19 @@ public class DbSeeder
 
         // Center coordinates for each postcode
         var postcodeCoords = new Dictionary<string, (double Lat, double Lon)>
-        {
-            { "TS16", (54.525079, -1.3649298) },
-            { "TS17", (54.5313629, -1.2914754) },
-            { "TS18", (54.5529822, -1.3193432) }
-        };
+           {
+               { "TS16", (54.525079, -1.3649298) },
+               { "TS17", (54.5313629, -1.2914754) },
+               { "TS18", (54.5529822, -1.3193432) }
+           };
 
-        // Streets for each postcode (you can adjust these or add more)
+        // Streets for each postcode
         var streetNames = new Dictionary<string, string[]>
-        {
-            { "TS16", new[] { "Formby Walk", "Alder Crescent", "Beech Road", "Maple Avenue", "Sycamore Street", "Poplar Drive", "Willow Close", "Hawthorn Way", "Elm Court", "Rowan View" } },
-            { "TS17", new[] { "Oakwood Drive", "Birch Lane", "Hazel Grove", "Chestnut Place", "Spruce Gardens", "Ash Terrace", "Cedar Lane", "Pine Avenue", "Lime Crescent", "Fir Walk" } },
-            { "TS18", new[] { "Cedar Avenue", "Holly Drive", "Ivy Road", "Juniper Close", "Laurel Street", "Magnolia Place", "Olive Court", "Palm Avenue", "Quince Grove", "Sycamore Walk" } }
-        };
+           {
+               { "TS16", new[] { "Formby Walk", "Alder Crescent", "Beech Road", "Maple Avenue", "Sycamore Street", "Poplar Drive", "Willow Close", "Hawthorn Way", "Elm Court", "Rowan View" } },
+               { "TS17", new[] { "Oakwood Drive", "Birch Lane", "Hazel Grove", "Chestnut Place", "Spruce Gardens", "Ash Terrace", "Cedar Lane", "Pine Avenue", "Lime Crescent", "Fir Walk" } },
+               { "TS18", new[] { "Cedar Avenue", "Holly Drive", "Ivy Road", "Juniper Close", "Laurel Street", "Magnolia Place", "Olive Court", "Palm Avenue", "Quince Grove", "Sycamore Walk" } }
+           };
 
         var random = new Random(1234);
         var sensorData = new List<SensorData>();
@@ -55,7 +57,7 @@ public class DbSeeder
                 double binLat = centerLat + latOffset;
                 double binLon = centerLon + lonOffset;
 
-                // Postcode group offset as before, but each bin in group can have a different day offset
+                // Postcode group offset, but each bin in group can have a different day offset
                 int groupOffset = postcode switch
                 {
                     "TS16" => 0,
@@ -65,7 +67,7 @@ public class DbSeeder
                 };
 
                 // Each bin can have its own offset within the group to stagger collection
-                int binOffset = (binIdx % 4); // 0,1,2,3,0,1,2,3...
+                int binOffset = (binIdx % 4);
 
                 float fill = random.Next(10, 30);
                 float weight = random.Next(4, 10);
@@ -117,8 +119,7 @@ public class DbSeeder
                         Longitude = binLon
                     });
 
-                    // ...environment data as before...
-                    // (No changes needed to env data)
+                    // Environment data
                     float temp = (float)(random.NextDouble() * 30 - 5);
                     float humidity = (float)(random.NextDouble() * 70 + 20);
                     float lowTemp = temp - (float)(random.NextDouble() * 3);
@@ -155,8 +156,6 @@ public class DbSeeder
                     });
                 }
             }
-
-
         }
 
         context.SensorReadings.AddRange(sensorData);

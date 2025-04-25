@@ -19,9 +19,9 @@ namespace Bindicator.Services
         }
 
         /// <summary>
-        /// Predicts when the bin will be full (100%) based on linear fill trend.
-        /// Sets PredictedFullDate and DaysToFull on the view model.
+        /// Calculates the predicted date when the bin will be full based on the recent trend of fill levels.
         /// </summary>
+        /// <param name="model">The view model containing bin readings and other related data.</param>
         public void CalculatePredictedFullDate(BinTrendViewModel model)
         {
             var readings = model.Readings;
@@ -56,7 +56,6 @@ namespace Bindicator.Services
             model.DaysToFull = null;
         }
 
-
         /// <summary>
         /// Helper to get warning messages for a sensor and environment reading.
         /// </summary>
@@ -71,23 +70,31 @@ namespace Bindicator.Services
                 warnings.Add("🦠 Warning: Warm and humid conditions. Increased risk of bacteria/mold.");
 
             if (sensor != null && sensor.Weight > 22)
-                warnings.Add("⚠️ Warning: Bin is nearly overloaded. Consider early collection.");
+                warnings.Add("⚠️ Warning: Bin is nearly overloaded.");
 
             if (sensor != null && sensor.FillLevel > 85)
                 warnings.Add("🚨 Notice: Bin is nearly full.");
 
             if (env != null && env.Temperature < 0)
-                warnings.Add("❄️ Notice: Freezing detected. Check for blockages.");
+                warnings.Add("❄️ Notice: Freezing detected. Potential dangerous conditions.");
 
             if (env != null && env.Humidity > 90)
                 warnings.Add("💧 Notice: High humidity detected in bin.");
 
             return warnings;
         }
-
-        /// <summary>
-        /// Gets the trend of bin fill levels, detects spikes, builds warning history, and predicts fullness.
+       
+        ///<summary>
+        /// Retrieves the trend data for a specific bin, including sensor readings, environment readings, and warning history.
         /// </summary>
+        /// <param name="postcode">The postcode of the bin's location.</param>
+        /// <param name="street">The street of the bin's location.</param>
+        /// <param name="binNumber">The bin number to retrieve data for.</param>
+        /// <returns>A <see cref="BinTrendViewModel"/> containing the bin's trend data, including readings, warnings, and predicted full date.</returns>
+        /// <remarks>
+        /// This method fetches sensor and environment readings from the database, calculates warnings based on the readings,
+        /// and predicts when the bin will be full based on recent trends.
+        /// </remarks>
         public async Task<BinTrendViewModel> GetTrendAsync(string postcode, string street, int binNumber)
         {
             var readings = await _context.SensorReadings
@@ -100,7 +107,7 @@ namespace Bindicator.Services
                 .OrderBy(e => e.Timestamp)
                 .ToListAsync();
 
-            // --- Build warning history ---
+            // Build warning history
             var warningHistory = new List<WarningEntry>();
 
             // For each sensor reading, find the most recent env reading at/before that time
