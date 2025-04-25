@@ -50,37 +50,58 @@ public class DbSeeder
                 string street = streets[binIdx % streets.Length];
                 int binNumber = binIdx + 1;
 
-                // Unique but plausible offsets
-                double latOffset = (random.NextDouble() - 0.5) * 0.012;  // about ±0.006 deg
-                double lonOffset = (random.NextDouble() - 0.5) * 0.02;   // about ±0.01 deg
-
+                double latOffset = (random.NextDouble() - 0.5) * 0.012;
+                double lonOffset = (random.NextDouble() - 0.5) * 0.02;
                 double binLat = centerLat + latOffset;
                 double binLon = centerLon + lonOffset;
 
-                float fill = random.Next(10, 50);
-                float weight = random.Next(5, 15);
+                // Postcode group offset as before, but each bin in group can have a different day offset
+                int groupOffset = postcode switch
+                {
+                    "TS16" => 0,
+                    "TS17" => 2,
+                    "TS18" => 4,
+                    _ => 0
+                };
+
+                // Each bin can have its own offset within the group to stagger collection
+                int binOffset = (binIdx % 4); // 0,1,2,3,0,1,2,3...
+
+                float fill = random.Next(10, 30);
+                float weight = random.Next(4, 10);
 
                 for (int day = 27; day >= 0; day--)
                 {
                     var timestamp = now.AddDays(-day);
 
-                    // Simulate fill/weight rising, with occasional resets (collection)
-                    if (random.NextDouble() < 0.15 && day != 27)
+                    int daysSinceFirst = 27 - day;
+
+                    // "Collection" every 14 days + bin offset to stagger empties in group
+                    bool isCollectionDay = ((daysSinceFirst - groupOffset - binOffset) % 14 == 0);
+
+                    if (isCollectionDay && daysSinceFirst > 0)
                     {
-                        fill = random.Next(5, 20);
+                        // Emptied bins don't always go back to nearly zero—simulate variable empties!
+                        fill = random.Next(5, 18);
                         weight = random.Next(2, 7);
                     }
                     else
                     {
-                        fill = Math.Min(fill + (float)(random.NextDouble() * 10), 100);
-                        weight = Math.Min(weight + (float)(random.NextDouble() * 2.5), 25);
+                        // Bins fill steadily
+                        fill = Math.Min(fill + (float)(random.NextDouble() * 7.5 + 2.5), 100);
+                        weight = Math.Min(weight + (float)(random.NextDouble() * 2 + 0.8), 25);
                     }
 
-                    // Insert some spikes for warning demonstration
-                    float density = (float)Math.Round(random.NextDouble() * 1.5 + 0.5, 2);
+                    // Optionally, for 1-2 bins per group, leave "just emptied" at the most recent day
+                    if (day == 0 && (binIdx % 10 == 0 || binIdx % 10 == 7))
+                    {
+                        fill = random.Next(5, 18);
+                        weight = random.Next(2, 7);
+                    }
 
-                    // Occasionally trigger "near full" warnings
-                    if (random.NextDouble() < 0.12)
+                    float density = (float)Math.Round(random.NextDouble() * 1.2 + 0.7, 2);
+
+                    if (random.NextDouble() < 0.07)
                         fill = random.Next(85, 100);
 
                     sensorData.Add(new SensorData
@@ -96,7 +117,8 @@ public class DbSeeder
                         Longitude = binLon
                     });
 
-                    // Simulate environment readings
+                    // ...environment data as before...
+                    // (No changes needed to env data)
                     float temp = (float)(random.NextDouble() * 30 - 5);
                     float humidity = (float)(random.NextDouble() * 70 + 20);
                     float lowTemp = temp - (float)(random.NextDouble() * 3);
@@ -133,6 +155,8 @@ public class DbSeeder
                     });
                 }
             }
+
+
         }
 
         context.SensorReadings.AddRange(sensorData);

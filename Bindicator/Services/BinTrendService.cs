@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Bindicator.Services
 {
     /// <summary>
-    /// Service to handle bin trend operations. Fetches readings for a specific bin
-    /// Handles the logic for detecting spikes in fill levels
+    /// Service to handle bin trend operations. Fetches readings for a specific bin,
+    /// calculates predictions, and builds warning history.
     /// </summary>
     public class BinTrendService
     {
@@ -17,6 +17,45 @@ namespace Bindicator.Services
         {
             _context = context;
         }
+
+        /// <summary>
+        /// Predicts when the bin will be full (100%) based on linear fill trend.
+        /// Sets PredictedFullDate and DaysToFull on the view model.
+        /// </summary>
+        public void CalculatePredictedFullDate(BinTrendViewModel model)
+        {
+            var readings = model.Readings;
+            if (readings.Count >= 3)
+            {
+                // Use last 3 readings for a recent trend
+                var recent = readings.Skip(Math.Max(0, readings.Count - 3)).ToList();
+
+                // Ensure all readings are increasing
+                if (recent[0].FillLevel < recent[1].FillLevel && recent[1].FillLevel < recent[2].FillLevel)
+                {
+                    var first = recent[0];
+                    var last = recent[2];
+                    double deltaFill = last.FillLevel - first.FillLevel;
+                    double days = (last.Timestamp - first.Timestamp).TotalDays;
+
+                    if (deltaFill > 0 && days > 0)
+                    {
+                        double ratePerDay = deltaFill / days;
+                        double remaining = 100.0 - last.FillLevel;
+                        double daysToFull = remaining / ratePerDay;
+                        // Clamp to max 21 days for demo
+                        daysToFull = Math.Min(daysToFull, 21);
+
+                        model.PredictedFullDate = last.Timestamp.AddDays(daysToFull);
+                        model.DaysToFull = daysToFull;
+                        return;
+                    }
+                }
+            }
+            model.PredictedFullDate = null;
+            model.DaysToFull = null;
+        }
+
 
         /// <summary>
         /// Helper to get warning messages for a sensor and environment reading.
@@ -47,7 +86,7 @@ namespace Bindicator.Services
         }
 
         /// <summary>
-        /// Gets the trend of bin fill levels, detects spikes, and builds warning history.
+        /// Gets the trend of bin fill levels, detects spikes, builds warning history, and predicts fullness.
         /// </summary>
         public async Task<BinTrendViewModel> GetTrendAsync(string postcode, string street, int binNumber)
         {
@@ -60,34 +99,6 @@ namespace Bindicator.Services
                 .Where(e => e.Postcode == postcode && e.Street == street && e.BinNumber == binNumber)
                 .OrderBy(e => e.Timestamp)
                 .ToListAsync();
-
-            // Simple linear regression prediction based on weight
-            //DateTime? predictedDate = null;
-            //double? daysToFull = null;
-
-            //if (readings.Count >= 2)
-            //{
-            //    var x = readings.Select(r => (r.Timestamp - readings[0].Timestamp).TotalDays).ToArray();
-            //    var y = readings.Select(r => (double)r.Weight).ToArray();
-
-            //    var xAvg = x.Average();
-            //    var yAvg = y.Average();
-
-            //    var numerator = x.Zip(y, (xi, yi) => (xi - xAvg) * (yi - yAvg)).Sum();
-            //    var denominator = x.Sum(xi => Math.Pow(xi - xAvg, 2));
-
-            //    if (denominator != 0)
-            //    {
-            //        var slope = numerator / denominator;
-            //        var intercept = yAvg - slope * xAvg;
-
-            //        const double maxWeight = 25.0; // max weight before full
-            //        daysToFull = (maxWeight - intercept) / slope;
-
-            //        if (daysToFull > 0)
-            //            predictedDate = readings[0].Timestamp.AddDays(daysToFull.Value);
-            //    }
-            //}
 
             // --- Build warning history ---
             var warningHistory = new List<WarningEntry>();
@@ -125,17 +136,20 @@ namespace Bindicator.Services
                 }
             }
 
-            return new BinTrendViewModel
+            // Build the view model and calculate prediction
+            var viewModel = new BinTrendViewModel
             {
                 Postcode = postcode,
                 Street = street,
                 BinNumber = binNumber,
                 Readings = readings,
                 EnvironmentReadings = envReadings,
-                //PredictedFullDate = predictedDate,
-                //DaysToFull = daysToFull,
                 WarningHistory = warningHistory
             };
+
+            CalculatePredictedFullDate(viewModel);
+
+            return viewModel;
         }
     }
 }
