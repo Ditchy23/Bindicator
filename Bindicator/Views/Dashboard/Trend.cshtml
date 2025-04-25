@@ -9,6 +9,10 @@
     var densities = Model.Readings.Select(r => r.Density).ToList();
     var temperatures = Model.EnvironmentReadings.Select(e => e.Temperature).ToList();
     var humidities = Model.EnvironmentReadings.Select(e => e.Humidity).ToList();
+    var recentCutoff = DateTime.UtcNow.AddHours(-24);
+    var recentWarnings = Model.WarningHistory.Where(w => w.Timestamp > recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
+    var historicalWarnings = Model.WarningHistory.Where(w => w.Timestamp <= recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
+
 }
 
 <h2>B-inspirations</h2>
@@ -81,18 +85,16 @@ else
     </div>
 }
 
-@if (Model.WarningHistory.Any())
+@if (recentWarnings.Any())
 {
     <div class="card mt-4 shadow-sm">
         <div class="card-header bg-warning-subtle text-dark">
-            <strong>⚠️ Bin Warnings & Alerts History</strong>
+            <strong>⚠️ New Warnings (Last 24h)</strong>
         </div>
         <div class="card-body p-0">
             <ul class="list-group list-group-flush">
-                @foreach (var warning in Model.WarningHistory.OrderByDescending(w => w.Timestamp))
+                @foreach (var warning in recentWarnings)
                 {
-                    var isRecent = (DateTime.UtcNow - warning.Timestamp).TotalHours < 24;
-                    var alertClass = isRecent ? "alert-warning" : "alert-secondary";
                     <li class="list-group-item d-flex align-items-center" style="background: inherit;">
                         <div class="flex-fill">
                             <span class="me-2">@warning.Message</span>
@@ -100,13 +102,40 @@ else
                         <div class="text-muted small text-end" style="min-width: 140px;">
                             @warning.Timestamp.ToLocalTime().ToString("g")
                         </div>
-                        @if (isRecent)
-                        {
-                            <span class="badge bg-warning text-dark ms-2">New</span>
-                        }
+                        <span class="badge bg-warning text-dark ms-2">New</span>
                     </li>
                 }
             </ul>
+        </div>
+    </div>
+}
+
+@if (historicalWarnings.Any())
+{
+    <div class="accordion mt-3" id="historicalWarningsAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingHistory">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory" aria-expanded="false" aria-controls="collapseHistory">
+                    Historical Warnings (older than 24h)
+                </button>
+            </h2>
+            <div id="collapseHistory" class="accordion-collapse collapse" aria-labelledby="headingHistory" data-bs-parent="#historicalWarningsAccordion">
+                <div class="accordion-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var warning in historicalWarnings)
+                        {
+                            <li class="list-group-item d-flex align-items-center" style="background: inherit;">
+                                <div class="flex-fill">
+                                    <span class="me-2">@warning.Message</span>
+                                </div>
+                                <div class="text-muted small text-end" style="min-width: 140px;">
+                                    @warning.Timestamp.ToLocalTime().ToString("g")
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 }
