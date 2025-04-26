@@ -1,4 +1,5 @@
 ﻿using Bindicator.Data;
+using Bindicator.Helpers;
 using Bindicator.Services;
 using Bindicator.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -82,8 +83,31 @@ namespace Bindicator.Controllers
                 .Select(g => g.OrderByDescending(b => b.Timestamp).First())
                 .ToListAsync();
 
-            return View(bins);
+            // Map SensorData to SensorDataViewModel and calculate predictions
+            var viewModel = bins.Select(b =>
+            {
+                var sensorDataViewModel = new Bindicator.ViewModels.SensorDataViewModel
+                {
+                    BinNumber = b.BinNumber,
+                    Latitude = b.Latitude,
+                    Longitude = b.Longitude,
+                    FillLevel = b.FillLevel,
+                    Weight = b.Weight,
+                    Timestamp = b.Timestamp,
+                    Postcode = b.Postcode,
+                    Street = b.Street
+                };
+
+                // Calculate PredictedFullDate and DaysToFull here if necessary
+                var readings = new List<Bindicator.Models.SensorData> { b }; // Example, use real readings if available
+                PredictionHelper.CalculatePredictedFullDate(readings, sensorDataViewModel);
+
+                return sensorDataViewModel;
+            }).ToList();
+
+            return View(viewModel);
         }
+
 
         /// <summary>
         /// Displays the edit location view for a specific bin.

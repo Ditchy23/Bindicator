@@ -1,4 +1,5 @@
 ﻿using Bindicator.Data;
+using Bindicator.Helpers;
 using Bindicator.Models;
 using Bindicator.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -22,39 +23,39 @@ namespace Bindicator.Services
         /// Calculates the predicted date when the bin will be full based on the recent trend of fill levels.
         /// </summary>
         /// <param name="model">The view model containing bin readings and other related data.</param>
-        public void CalculatePredictedFullDate(BinTrendViewModel model)
-        {
-            var readings = model.Readings;
-            if (readings.Count >= 3)
-            {
-                // Use last 3 readings for a recent trend
-                var recent = readings.Skip(Math.Max(0, readings.Count - 3)).ToList();
+        //public void CalculatePredictedFullDate(BinTrendViewModel model)
+        //{
+        //    var readings = model.Readings;
+        //    if (readings.Count >= 3)
+        //    {
+        //        // Use last 3 readings for a recent trend
+        //        var recent = readings.Skip(Math.Max(0, readings.Count - 3)).ToList();
 
-                // Ensure all readings are increasing
-                if (recent[0].FillLevel < recent[1].FillLevel && recent[1].FillLevel < recent[2].FillLevel)
-                {
-                    var first = recent[0];
-                    var last = recent[2];
-                    double deltaFill = last.FillLevel - first.FillLevel;
-                    double days = (last.Timestamp - first.Timestamp).TotalDays;
+        //        // Ensure all readings are increasing
+        //        if (recent[0].FillLevel < recent[1].FillLevel && recent[1].FillLevel < recent[2].FillLevel)
+        //        {
+        //            var first = recent[0];
+        //            var last = recent[2];
+        //            double deltaFill = last.FillLevel - first.FillLevel;
+        //            double days = (last.Timestamp - first.Timestamp).TotalDays;
 
-                    if (deltaFill > 0 && days > 0)
-                    {
-                        double ratePerDay = deltaFill / days;
-                        double remaining = 100.0 - last.FillLevel;
-                        double daysToFull = remaining / ratePerDay;
-                        // Clamp to max 21 days for demo
-                        daysToFull = Math.Min(daysToFull, 21);
+        //            if (deltaFill > 0 && days > 0)
+        //            {
+        //                double ratePerDay = deltaFill / days;
+        //                double remaining = 100.0 - last.FillLevel;
+        //                double daysToFull = remaining / ratePerDay;
+        //                // Clamp to max 21 days for demo
+        //                daysToFull = Math.Min(daysToFull, 21);
 
-                        model.PredictedFullDate = last.Timestamp.AddDays(daysToFull);
-                        model.DaysToFull = daysToFull;
-                        return;
-                    }
-                }
-            }
-            model.PredictedFullDate = null;
-            model.DaysToFull = null;
-        }
+        //                model.PredictedFullDate = last.Timestamp.AddDays(daysToFull);
+        //                model.DaysToFull = daysToFull;
+        //                return;
+        //            }
+        //        }
+        //    }
+        //    model.PredictedFullDate = null;
+        //    model.DaysToFull = null;
+        //}
 
         /// <summary>
         /// Helper to get warning messages for a sensor and environment reading.
@@ -83,7 +84,7 @@ namespace Bindicator.Services
 
             return warnings;
         }
-       
+
         ///<summary>
         /// Retrieves the trend data for a specific bin, including sensor readings, environment readings, and warning history.
         /// </summary>
@@ -109,8 +110,6 @@ namespace Bindicator.Services
 
             // Build warning history
             var warningHistory = new List<WarningEntry>();
-
-            // For each sensor reading, find the most recent env reading at/before that time
             foreach (var sensor in readings)
             {
                 var env = envReadings.LastOrDefault(e => e.Timestamp <= sensor.Timestamp);
@@ -125,10 +124,8 @@ namespace Bindicator.Services
                 }
             }
 
-            // Also check env readings not covered by a sensor reading
             foreach (var env in envReadings)
             {
-                // If no warning for this timestamp (from above), check env-only warnings
                 if (!warningHistory.Any(w => w.Timestamp == env.Timestamp))
                 {
                     var warnings = GetWarnings(null, env);
@@ -143,7 +140,6 @@ namespace Bindicator.Services
                 }
             }
 
-            // Build the view model and calculate prediction
             var viewModel = new BinTrendViewModel
             {
                 Postcode = postcode,
@@ -154,7 +150,8 @@ namespace Bindicator.Services
                 WarningHistory = warningHistory
             };
 
-            CalculatePredictedFullDate(viewModel);
+            // Use the helper method to calculate the predicted full date
+            PredictionHelper.CalculatePredictedFullDate(readings, viewModel);
 
             return viewModel;
         }

@@ -33,11 +33,6 @@ namespace Bindicator.ViewModels
         public List<EnvironmentData> EnvironmentReadings { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the list of spike points indicating significant changes in bin levels.
-        /// </summary>
-        public List<SpikePoint> Spikes { get; set; } = new();
-
-        /// <summary>
         /// Gets or sets the predicted date when the bin will be full based on linear regression.
         /// </summary>
         public DateTime? PredictedFullDate { get; set; }
@@ -70,25 +65,4 @@ namespace Bindicator.ViewModels
         public string Message { get; set; } = string.Empty;
     }
 
-
-    /// <summary>
-    /// Represents a point in time where a significant change in bin level occurred.
-    /// </summary>
-    public class SpikePoint
-    {
-        /// <summary>
-        /// Gets or sets the timestamp of the spike.
-        /// </summary>
-        public DateTime Timestamp { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bin level before the spike.
-        /// </summary>
-        public float FromLevel { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bin level after the spike.
-        /// </summary>
-        public float ToLevel { get; set; }
-    }
 }
