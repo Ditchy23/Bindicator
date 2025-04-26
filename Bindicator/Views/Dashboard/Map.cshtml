@@ -1,21 +1,13 @@
 ﻿@model List<Bindicator.Models.SensorData>
 
 @{
-	ViewData["Title"] = "Bin Locations";
-	var postcodes = Model.Select(b => b.Postcode).Distinct().OrderBy(x => x).ToList();
+    ViewData["Title"] = "Bin Locations";
 }
 
 <h2>Bin Locations</h2>
 
 <div class="mb-2">
-	<label for="postcodeSelect"><strong>Select postcode:</strong></label>
-	<select id="postcodeSelect" class="form-select d-inline-block w-auto">
-		@foreach (var postcode in postcodes)
-		{
-			<option value="@postcode">@postcode</option>
-		}
-	</select>
-	<button id="routeBtn" class="btn btn-primary ms-2">Show Route</button>
+    <button id="routeBtn" class="btn btn-primary ms-2">Show Route for All Bins</button>
 </div>
 
 <div id="map" style="height: 500px; width: 100%;"></div>
@@ -24,155 +16,168 @@
 <link href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" rel="stylesheet" />
 
 <script>
-	const subscriptionKey = '6YZVxWqgi0evzdHfzLVwAVke8lgbHuNwhaMQKSv5TiDbpSZD1SCQJQQJ99BDAC5RqLJvjAgdAAAgAZMP1fVL';
+    const subscriptionKey = '6YZVxWqgi0evzdHfzLVwAVke8lgbHuNwhaMQKSv5TiDbpSZD1SCQJQQJ99BDAC5RqLJvjAgdAAAgAZMP1fVL';
 
-	const map = new atlas.Map('map', {
-		center: [-1.3, 54.56],
-		zoom: 13,
-		style: 'night',
-		authOptions: {
-			authType: 'subscriptionKey',
-			subscriptionKey: subscriptionKey
-		}
-	});
+    const map = new atlas.Map('map', {
+        center: [-1.3, 54.56],
+        zoom: 13,
+        style: 'night',
+        authOptions: {
+            authType: 'subscriptionKey',
+            subscriptionKey: subscriptionKey
+        }
+    });
 
-	function getFillColor(fillLevel) {
-		const clamp = (val, min, max) => Math.max(min, Math.min(val, max));
-		const t = clamp(fillLevel / 100, 0, 1);
-		const r = 255;
-		const g = Math.round(255 * (1 - t));
-		const b = Math.round(255 * (1 - t));
-		return `rgb(${r}, ${g}, ${b})`;
-	}
+    function getFillColor(fillLevel) {
+        const clamp = (val, min, max) => Math.max(min, Math.min(val, max));
+        const t = clamp(fillLevel / 100, 0, 1);
+        const r = 255;
+        const g = Math.round(255 * (1 - t));
+        const b = Math.round(255 * (1 - t));
+        return `rgb(${r}, ${g}, ${b})`;
+    }
 
-	let routeLineSource = null;
-	let routeLineLayer = null;
+    let routeLineSource = null;
+    let routeLineLayer = null;
 
-	map.events.add('ready', () => {
-		const bins = @Html.Raw(Json.Serialize(Model));
-		let bounds = null;
-		const markerObjs = [];
+    map.events.add('ready', () => {
+        const bins = @Html.Raw(Json.Serialize(Model));
+        let bounds = null;
+        const markerObjs = [];
 
-		bins.forEach(bin => {
-			const fillColor = getFillColor(bin.fillLevel);
+        bins.forEach(bin => {
+            // Log the data for debugging
+            console.log(`Bin ${bin.binNumber}: Latitude = ${bin.latitude}, Longitude = ${bin.longitude}`);
 
-			const marker = new atlas.HtmlMarker({
-				position: [bin.longitude, bin.latitude],
-				text: `${bin.binNumber}`,
-				color: fillColor
-			});
+            // Check for invalid coordinates (latitude or longitude being 0)
+            if (bin.latitude === 0 && bin.longitude === 0) {
+                console.warn(`Skipping bin ${bin.binNumber}: Invalid coordinates (0, 0)`);
+                return; // Skip this bin if coordinates are invalid
+            }
 
-			// Expand map bounds
-			if (!bounds) {
-				bounds = [ [bin.longitude, bin.latitude], [bin.longitude, bin.latitude] ];
-			} else {
-				bounds[0][0] = Math.min(bounds[0][0], bin.longitude);
-				bounds[0][1] = Math.min(bounds[0][1], bin.latitude);
-				bounds[1][0] = Math.max(bounds[1][0], bin.longitude);
-				bounds[1][1] = Math.max(bounds[1][1], bin.latitude);
-			}
+            const fillColor = getFillColor(bin.fillLevel);
 
-			const popupContent = document.createElement('div');
-			popupContent.style.padding = '6px';
-			popupContent.style.fontSize = '0.9em';
-			popupContent.style.maxWidth = '220px';
-			popupContent.innerHTML = `
-				<strong>${bin.street} (Bin #${bin.binNumber})</strong><br/>
-				<strong>Postcode:</strong> ${bin.postcode}<br/>
-				<strong>Fill Level:</strong> ${bin.fillLevel.toFixed(0)}%<br/>
-				<strong>Weight:</strong> ${bin.weight.toFixed(1)} kg<br/>
-				<strong>Density:</strong> ${bin.density.toFixed(2)}<br/>
-				<strong>Updated:</strong> ${new Date(bin.timestamp).toLocaleString()}<br/>
-				<a style='color: #99ccff' href='/Dashboard/Trend?postcode=${encodeURIComponent(bin.postcode)}&street=${encodeURIComponent(bin.street)}&binNumber=${bin.binNumber}'>
-					View Trend
-				</a>
-			`;
-			const popup = new atlas.Popup({
-				position: [bin.longitude, bin.latitude]
-			});
+            const marker = new atlas.HtmlMarker({
+                position: [bin.longitude, bin.latitude], // Ensure longitude, latitude order
+                text: `${bin.binNumber}`,
+                color: fillColor
+            });
 
-			popup.setOptions({ content: popupContent });
+            // Expand map bounds
+            if (!bounds) {
+                bounds = [[bin.longitude, bin.latitude], [bin.longitude, bin.latitude]];
+            } else {
+                bounds[0][0] = Math.min(bounds[0][0], bin.longitude);
+                bounds[0][1] = Math.min(bounds[0][1], bin.latitude);
+                bounds[1][0] = Math.max(bounds[1][0], bin.longitude);
+                bounds[1][1] = Math.max(bounds[1][1], bin.latitude);
+            }
 
-			map.markers.add(marker);
-			map.events.add('click', marker, () => popup.open(map));
-			markerObjs.push({ marker, bin });
-		});
+            const popupContent = document.createElement('div');
+            popupContent.style.padding = '6px';
+            popupContent.style.fontSize = '0.9em';
+            popupContent.style.maxWidth = '220px';
+            popupContent.innerHTML = `
+                <strong>${bin.street} (Bin #${bin.binNumber})</strong><br/>
+                <strong>Postcode:</strong> ${bin.postcode}<br/>
+                <strong>Fill Level:</strong> ${bin.fillLevel.toFixed(0)}%<br/>
+                <strong>Weight:</strong> ${bin.weight.toFixed(1)} kg<br/>
+                <strong>Density:</strong> ${bin.density.toFixed(2)}<br/>
+                <strong>Updated:</strong> ${new Date(bin.timestamp).toLocaleString()}<br/>
+                <a style='color: #99ccff' href='/Dashboard/Trend?postcode=${encodeURIComponent(bin.postcode)}&street=${encodeURIComponent(bin.street)}&binNumber=${bin.binNumber}'>
+                    View Trend
+                </a>
+            `;
+            const popup = new atlas.Popup({
+                position: [bin.longitude, bin.latitude] // Use longitude, latitude order
+            });
 
-		// Fit map to show all bins
-		if (bounds && bins.length > 1) {
-			map.setCamera({
-				bounds: atlas.data.BoundingBox.fromPositions([bounds[0], bounds[1]]),
-				padding: 60
-			});
-		}
+            popup.setOptions({ content: popupContent });
 
-		// Set up routing
-	   document.getElementById("routeBtn").onclick = async function() {
-		// Remove old route if it exists
-		try {
-			if (routeLineLayer) map.layers.remove(routeLineLayer);
-		} catch (e) { /* Layer not found, ignore */ }
-		try {
-			if (routeLineSource) map.sources.remove(routeLineSource);
-		} catch (e) { /* Source not found, ignore */ }
+            map.markers.add(marker);
+            map.events.add('click', marker, () => popup.open(map));
+            markerObjs.push({ marker, bin });
+        });
 
-			// Get postcode from dropdown
-			const selectedPostcode = document.getElementById("postcodeSelect").value;
-			// Get all bins in that postcode, sorted by bin number for a repeatable route
-			const selectedBins = bins.filter(bin => bin.postcode === selectedPostcode)
-				.sort((a, b) => a.binNumber - b.binNumber);
+        // Fit map to show all bins
+        if (bounds && bins.length > 1) {
+            map.setCamera({
+                bounds: atlas.data.BoundingBox.fromPositions([bounds[0], bounds[1]]),
+                padding: 60
+            });
+        }
 
-			if (selectedBins.length < 2) {
-				alert("Need at least two bins in this postcode to generate a route.");
-				return;
-			}
+        // Set up routing for all bins when the button is clicked
+        document.getElementById("routeBtn").onclick = async function() {
+            // Remove old route if it exists
+            try {
+                if (routeLineLayer) map.layers.remove(routeLineLayer);
+            } catch (e) { /* Layer not found, ignore */ }
+            try {
+                if (routeLineSource) map.sources.remove(routeLineSource);
+            } catch (e) { /* Source not found, ignore */ }
 
-			// Get waypoints as lon,lat strings (note: Azure Maps wants latitude, longitude order)
-			const waypoints = selectedBins.map(bin => `${bin.latitude},${bin.longitude}`);
+            // Sort bins by predicted fullness or current fill level
+            const sortedBins = bins.sort((a, b) => {
+                // Prioritize bins predicted to be full soon (based on `daysToFull`) or full bins
+                if (a.daysToFull !== b.daysToFull) {
+                    return a.daysToFull - b.daysToFull; // Prioritize bins predicted to be full soon
+                }
+                return b.fillLevel - a.fillLevel; // Prioritize bins that are fuller
+            });
 
-			// Build Azure Maps Route API URL
-			const routeUrl =
-				`https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}` +
-				`&query=${waypoints.join(':')}`;
+            // Filter out bins with invalid coordinates (latitude or longitude being 0)
+            const validBins = sortedBins.filter(bin => bin.latitude !== 0 && bin.longitude !== 0);
 
-			// Fetch route
-			const response = await fetch(routeUrl);
-			const data = await response.json();
+            if (validBins.length < 2) {
+                alert("No valid bins with proper coordinates found for routing.");
+                return;
+            }
 
-			if (!data.routes || data.routes.length === 0) {
-				alert("No route found.");
-				return;
-			}
+            // Get waypoints as lon,lat strings (note: Azure Maps wants latitude, longitude order)
+            const waypoints = validBins.map(bin => `${bin.latitude},${bin.longitude}`);
 
-			// Get the route geometry (list of coordinates)
-			const routePoints = data.routes[0].legs.flatMap(leg =>
-				leg.points.map(pt => [pt.longitude, pt.latitude])
-			);
+            // Build Azure Maps Route API URL
+            const routeUrl = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${waypoints.join(':')}`;
 
-			// Add a GeoJSON source for the route line
-			routeLineSource = new atlas.source.DataSource();
-			map.sources.add(routeLineSource);
+            // Fetch route
+            const response = await fetch(routeUrl);
+            const data = await response.json();
 
-			const routeLine = new atlas.data.LineString(routePoints);
-			routeLineSource.add(new atlas.data.Feature(routeLine));
+            if (!data.routes || data.routes.length === 0) {
+                alert("No route found.");
+                return;
+            }
 
-			// Add a line layer for the route
-			routeLineLayer = new atlas.layer.LineLayer(routeLineSource, null, {
-				strokeColor: '#00BFFF',
-				strokeWidth: 5
-			});
-			map.layers.add(routeLineLayer);
+            // Get the route geometry (list of coordinates)
+            const routePoints = data.routes[0].legs.flatMap(leg =>
+                leg.points.map(pt => [pt.longitude, pt.latitude])
+            );
 
-			// Fit the map to the route bounds
-			const lons = routePoints.map(pt => pt[0]);
-			const lats = routePoints.map(pt => pt[1]);
-			map.setCamera({
-				bounds: atlas.data.BoundingBox.fromPositions([
-					[Math.min(...lons), Math.min(...lats)],
-					[Math.max(...lons), Math.max(...lats)]
-				]),
-				padding: 60
-			});
-		};
-	});
+            // Add a GeoJSON source for the route line
+            routeLineSource = new atlas.source.DataSource();
+            map.sources.add(routeLineSource);
+
+            const routeLine = new atlas.data.LineString(routePoints);
+            routeLineSource.add(new atlas.data.Feature(routeLine));
+
+            // Add a line layer for the route
+            routeLineLayer = new atlas.layer.LineLayer(routeLineSource, null, {
+                strokeColor: '#00BFFF',
+                strokeWidth: 5
+            });
+            map.layers.add(routeLineLayer);
+
+            // Fit the map to the route bounds
+            const lons = routePoints.map(pt => pt[0]);
+            const lats = routePoints.map(pt => pt[1]);
+            map.setCamera({
+                bounds: atlas.data.BoundingBox.fromPositions([
+                    [Math.min(...lons), Math.min(...lats)],
+                    [Math.max(...lons), Math.max(...lats)]
+                ]),
+                padding: 60
+            });
+        };
+    });
 </script>
