@@ -229,86 +229,94 @@
         addMarkers(binsFirstCollection);
         addMarkers(binsSecondCollection);
 
-        // Clear previous route and calculate new route for the first collection
+        // First Collection: Route calculation
         document.getElementById("routeBtn").onclick = async function() {
-            // Remove previous route if it exists
-            if (routeLineLayerFirst) {
-                map.layers.remove(routeLineLayerFirst);
-                routeLineLayerFirst = null;
+            // Only add the route once
+            if (!routeLineLayerFirst) {
+                const firstCollectionWaypoints = binsFirstCollection.map(bin => `${bin.latitude},${bin.longitude}`);
+                if (firstCollectionWaypoints.length < 2) {
+                    alert("Not enough valid bins in the first collection for routing.");
+                    return;
+                }
+
+                const routeUrlFirst = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${firstCollectionWaypoints.join(':')}`;
+                const responseFirst = await fetch(routeUrlFirst);
+                const dataFirst = await responseFirst.json();
+
+                if (!dataFirst.routes || dataFirst.routes.length === 0) {
+                    alert("No route found for the first collection.");
+                    return;
+                }
+
+                const routePointsFirst = dataFirst.routes[0].legs.flatMap(leg => leg.points.map(pt => [pt.longitude, pt.latitude]));
+
+                routeLineSourceFirst = new atlas.source.DataSource();
+                map.sources.add(routeLineSourceFirst);
+
+                const routeLineFirst = new atlas.data.LineString(routePointsFirst);
+                routeLineSourceFirst.add(new atlas.data.Feature(routeLineFirst));
+
+                routeLineLayerFirst = new atlas.layer.LineLayer(routeLineSourceFirst, null, { strokeColor: '#00BFFF', strokeWidth: 5 });
+                map.layers.add(routeLineLayerFirst);
             }
-            if (routeLineSourceFirst) {
-                map.sources.remove(routeLineSourceFirst);
-                routeLineSourceFirst = null;
-            }
-
-            // First Collection: Route calculation
-            const firstCollectionWaypoints = binsFirstCollection.map(bin => `${bin.latitude},${bin.longitude}`);
-
-            if (firstCollectionWaypoints.length < 2) {
-                alert("Not enough valid bins in the first collection for routing.");
-                return;
-            }
-
-            const routeUrlFirst = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${firstCollectionWaypoints.join(':')}`;
-            const responseFirst = await fetch(routeUrlFirst);
-            const dataFirst = await responseFirst.json();
-
-            if (!dataFirst.routes || dataFirst.routes.length === 0) {
-                alert("No route found for the first collection.");
-                return;
-            }
-
-            const routePointsFirst = dataFirst.routes[0].legs.flatMap(leg => leg.points.map(pt => [pt.longitude, pt.latitude]));
-
-            routeLineSourceFirst = new atlas.source.DataSource();
-            map.sources.add(routeLineSourceFirst);
-
-            const routeLineFirst = new atlas.data.LineString(routePointsFirst);
-            routeLineSourceFirst.add(new atlas.data.Feature(routeLineFirst));
-
-            routeLineLayerFirst = new atlas.layer.LineLayer(routeLineSourceFirst, null, { strokeColor: '#00BFFF', strokeWidth: 5 });
-            map.layers.add(routeLineLayerFirst);
         };
 
-        // Clear previous route and calculate new route for the second collection
+        // Second Collection: Route calculation
         document.getElementById("routeBtn2").onclick = async function() {
-            // Remove previous route if it exists
-            if (routeLineLayerSecond) {
-                map.layers.remove(routeLineLayerSecond);
-                routeLineLayerSecond = null;
+            // Only add the route once
+            if (!routeLineLayerSecond) {
+                const secondCollectionWaypoints = binsSecondCollection.map(bin => `${bin.latitude},${bin.longitude}`);
+                if (secondCollectionWaypoints.length < 2) {
+                    alert("Not enough valid bins in the second collection for routing.");
+                    return;
+                }
+
+                const routeUrlSecond = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${secondCollectionWaypoints.join(':')}`;
+                const responseSecond = await fetch(routeUrlSecond);
+                const dataSecond = await responseSecond.json();
+
+                if (!dataSecond.routes || dataSecond.routes.length === 0) {
+                    alert("No route found for the second collection.");
+                    return;
+                }
+
+                const routePointsSecond = dataSecond.routes[0].legs.flatMap(leg => leg.points.map(pt => [pt.longitude, pt.latitude]));
+
+                routeLineSourceSecond = new atlas.source.DataSource();
+                map.sources.add(routeLineSourceSecond);
+
+                const routeLineSecond = new atlas.data.LineString(routePointsSecond);
+                routeLineSourceSecond.add(new atlas.data.Feature(routeLineSecond));
+
+                routeLineLayerSecond = new atlas.layer.LineLayer(routeLineSourceSecond, null, { strokeColor: '#00FF00', strokeWidth: 5 });
+                map.layers.add(routeLineLayerSecond);
             }
-            if (routeLineSourceSecond) {
-                map.sources.remove(routeLineSourceSecond);
-                routeLineSourceSecond = null;
-            }
-
-            // Second Collection: Route calculation
-            const secondCollectionWaypoints = binsSecondCollection.map(bin => `${bin.latitude},${bin.longitude}`);
-
-            if (secondCollectionWaypoints.length < 2) {
-                alert("Not enough valid bins in the second collection for routing.");
-                return;
-            }
-
-            const routeUrlSecond = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${secondCollectionWaypoints.join(':')}`;
-            const responseSecond = await fetch(routeUrlSecond);
-            const dataSecond = await responseSecond.json();
-
-            if (!dataSecond.routes || dataSecond.routes.length === 0) {
-                alert("No route found for the second collection.");
-                return;
-            }
-
-            const routePointsSecond = dataSecond.routes[0].legs.flatMap(leg => leg.points.map(pt => [pt.longitude, pt.latitude]));
-
-            routeLineSourceSecond = new atlas.source.DataSource();
-            map.sources.add(routeLineSourceSecond);
-
-            const routeLineSecond = new atlas.data.LineString(routePointsSecond);
-            routeLineSourceSecond.add(new atlas.data.Feature(routeLineSecond));
-
-            routeLineLayerSecond = new atlas.layer.LineLayer(routeLineSourceSecond, null, { strokeColor: '#00FF00', strokeWidth: 5 });
-            map.layers.add(routeLineLayerSecond);
         };
+
+        // Add event listeners for toggling route visibility
+        document.getElementById("toggleRouteFirst").addEventListener("change", function() {
+            if (this.checked) {
+                if (routeLineLayerFirst) {
+                    routeLineLayerFirst.setOptions({ visible: true }); // Set layer to visible
+                }
+            } else {
+                if (routeLineLayerFirst) {
+                    routeLineLayerFirst.setOptions({ visible: false }); // Hide layer
+                }
+            }
+        });
+
+        document.getElementById("toggleRouteSecond").addEventListener("change", function() {
+            if (this.checked) {
+                if (routeLineLayerSecond) {
+                    routeLineLayerSecond.setOptions({ visible: true }); // Set layer to visible
+                }
+            } else {
+                if (routeLineLayerSecond) {
+                    routeLineLayerSecond.setOptions({ visible: false }); // Hide layer
+                }
+            }
+        });
     });
 </script>
+
