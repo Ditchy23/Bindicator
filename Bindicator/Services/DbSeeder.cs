@@ -8,11 +8,6 @@ using System.Collections.Generic;
 /// </summary>
 public class DbSeeder
 {
-    /// <summary>
-    /// Seeds the database with initial data if it has not been seeded already.
-    /// </summary>
-    /// <param name="context">The application's database context.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
@@ -72,6 +67,7 @@ public class DbSeeder
                 float fill = random.Next(10, 30);
                 float weight = random.Next(4, 10);
 
+                // Ensure we have at least 3 recent readings with an increase in weight for prediction
                 for (int day = 27; day >= 0; day--)
                 {
                     var timestamp = now.AddDays(-day);
@@ -89,16 +85,17 @@ public class DbSeeder
                     }
                     else
                     {
-                        // Bins fill steadily
-                        fill = Math.Min(fill + (float)(random.NextDouble() * 7.5 + 2.5), 100);
-                        weight = Math.Min(weight + (float)(random.NextDouble() * 2 + 0.8), 25);
-                    }
-
-                    // Optionally, for 1-2 bins per group, leave "just emptied" at the most recent day
-                    if (day == 0 && (binIdx % 10 == 0 || binIdx % 10 == 7))
-                    {
-                        fill = random.Next(5, 18);
-                        weight = random.Next(2, 7);
+                        // Ensure weight and fill increase steadily for the last 3 readings
+                        if (daysSinceFirst >= 24) // Ensure the last 3 readings increase
+                        {
+                            fill = Math.Min(fill + (float)(random.NextDouble() * 7.5 + 2.5), 100);
+                            weight = Math.Min(weight + (float)(random.NextDouble() * 2 + 0.8), 25);
+                        }
+                        else
+                        {
+                            fill = Math.Min(fill + (float)(random.NextDouble() * 3 + 1), 100); // Steady increase for earlier days
+                            weight = Math.Min(weight + (float)(random.NextDouble() * 1.5 + 0.5), 25); // Steady increase for earlier days
+                        }
                     }
 
                     float density = (float)Math.Round(random.NextDouble() * 1.2 + 0.7, 2);

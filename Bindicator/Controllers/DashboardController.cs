@@ -83,7 +83,6 @@ namespace Bindicator.Controllers
                 .Select(g => g.OrderByDescending(b => b.Timestamp).First())
                 .ToListAsync();
 
-            // Map SensorData to SensorDataViewModel and calculate predictions
             var viewModel = bins.Select(b =>
             {
                 var sensorDataViewModel = new Bindicator.ViewModels.SensorDataViewModel
@@ -98,15 +97,59 @@ namespace Bindicator.Controllers
                     Street = b.Street
                 };
 
-                // Calculate PredictedFullDate and DaysToFull here if necessary
-                var readings = new List<Bindicator.Models.SensorData> { b }; // Example, use real readings if available
-                PredictionHelper.CalculatePredictedFullDate(readings, sensorDataViewModel);
+                // Pull all readings for this bin for prediction
+                var allReadings = _context.SensorReadings
+                    .Where(r => r.Postcode == b.Postcode && r.Street == b.Street && r.BinNumber == b.BinNumber)
+                    .OrderBy(r => r.Timestamp)
+                    .ToList();
+
+                PredictionHelper.CalculatePredictedFullDate(allReadings, sensorDataViewModel);
 
                 return sensorDataViewModel;
             }).ToList();
 
+            // Current Date to compare against predicted fullness dates
+            var currentDate = DateTime.UtcNow;
+
+            // First Collection (Priority) - Full or predicted to be full within 1 day
+            var binsForFirstCollection = viewModel.Where(bin =>
+                bin.FillLevel == 100 ||
+                (bin.PredictedFullDate.HasValue && bin.PredictedFullDate.Value <= currentDate.AddDays(1))
+            ).ToList();
+
+            // Second Collection - Predicted to be full within the next 2 weeks, but not full yet
+            var binsForSecondCollection = viewModel.Where(bin =>
+                (bin.FillLevel < 100 &&
+                bin.PredictedFullDate.HasValue &&
+                bin.PredictedFullDate.Value > currentDate.AddDays(1) &&
+                bin.PredictedFullDate.Value <= currentDate.AddDays(14))
+            ).ToList();
+
+            // Determine the collection dates based on the latest predicted full date in each list
+            DateTime firstCollectionDate = binsForFirstCollection.Max(bin => bin.PredictedFullDate) ?? DateTime.UtcNow;
+            DateTime secondCollectionDate = binsForSecondCollection.Max(bin => bin.PredictedFullDate) ?? DateTime.UtcNow.AddDays(14);
+
+            // Calculate total weight and wagons required for each collection date
+            double totalWeightFirstCollection = binsForFirstCollection.Sum(bin => bin.Weight);
+            double totalWeightSecondCollection = binsForSecondCollection.Sum(bin => bin.Weight);
+
+            int wagonsForFirstCollection = (int)Math.Ceiling(totalWeightFirstCollection / 200); // Assuming 200kg per wagon
+            int wagonsForSecondCollection = (int)Math.Ceiling(totalWeightSecondCollection / 200);
+
+            // Pass data to the view
+            ViewBag.FirstCollectionDate = firstCollectionDate;
+            ViewBag.SecondCollectionDate = secondCollectionDate;
+            ViewBag.TotalWeightFirstCollection = totalWeightFirstCollection;
+            ViewBag.TotalWeightSecondCollection = totalWeightSecondCollection;
+            ViewBag.WagonsForFirstCollection = wagonsForFirstCollection;
+            ViewBag.WagonsForSecondCollection = wagonsForSecondCollection;
+            ViewBag.BinsForFirstCollection = binsForFirstCollection;
+            ViewBag.BinsForSecondCollection = binsForSecondCollection;
+
             return View(viewModel);
         }
+
+
 
 
         /// <summary>
