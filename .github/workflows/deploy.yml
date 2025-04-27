@@ -1,0 +1,45 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - master  # Triggers the workflow on push to the master branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # You can also use windows-latest if you need to run on a Windows agent
+
+    steps:
+    # Checkout code from GitHub
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up .NET Core
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x'
+
+    # Restore dependencies
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # Build the project
+    - name: Build project
+      run: dotnet build --no-restore
+
+    # Run tests
+    - name: Run tests
+      run: dotnet test --no-build --verbosity normal
+
+    # Publish the project
+    - name: Publish the project
+      run: dotnet publish -c Release -o ./publish
+
+    # Deploy to Azure Web App
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'Bindicator-web'
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2E6677CD35A04F33B47A48C684F990B0 }}  # Publish profile secret
+        package: ./publish  # Path to the published output
