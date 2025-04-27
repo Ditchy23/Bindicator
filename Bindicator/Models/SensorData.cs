@@ -48,11 +48,11 @@
         /// <summary>
         /// Gets or sets the latitude where the sensor is located.
         /// </summary>
-        public double Latitude { get; set; }
+        public double Latitude { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the longitude where the sensor is located.
         /// </summary>
-        public double Longitude { get; set; }
+        public double Longitude { get; set; } = 0;
     }
 }

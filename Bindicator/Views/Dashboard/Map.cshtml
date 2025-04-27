@@ -5,53 +5,145 @@
 }
 
 <h2>Bin Locations</h2>
+<p class="lead">This page displays the locations of bins and their fill levels.</p>
+<p class="lead">The map below shows the locations of bins for the first and second collections.</p>
+<p class="lead">Click on the markers to see more details about each bin.</p>
 
+<!-- First Collection Information -->
+<div class="card mb-3">
+    <div class="card-header">
+        <strong>First Collection Info</strong>
+    </div>
+    <div class="card-body">
+        <p><strong>First Collection Date:</strong> @ViewBag.FirstCollectionDate.ToString("f")</p>
+        <p><strong>Total Weight for First Collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightFirstCollection)</p>
+        <p><strong>Wagons Needed:</strong> @ViewBag.WagonsForFirstCollection</p>
 
-<div class="alert alert-info mb-2">
-    <strong>First Collection Date:</strong> @ViewBag.FirstCollectionDate.ToString("f")<br />
-    <strong>Total Weight for First Collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightFirstCollection)<br />
-    <strong>Wagons Needed:</strong> @ViewBag.WagonsForFirstCollection<br />
+        <!-- Calculate Route Button for First Collection -->
+        <div class="mb-2">
+            <button id="routeBtn" class="btn btn-primary ms-2">Calculate Route</button>
+        </div>
+        <!-- Toggle checkbox for First Collection Route -->
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="toggleRouteFirst" checked />
+            <label class="form-check-label" for="toggleRouteFirst">
+                Show First Collection Route
+            </label>
+        </div>
+    </div>
 </div>
 
 
-<div class="alert alert-info mb-2">
-    <strong>Second Collection Date:</strong> @ViewBag.SecondCollectionDate.ToString("f")<br />
-    <strong>Total Weight for Second Collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightSecondCollection)<br />
-    <strong>Wagons Needed:</strong> @ViewBag.WagonsForSecondCollection<br />
+
+<!-- Accordion for Bins in First Collection -->
+<div class="accordion" id="accordionFirstCollection">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingFirstCollection">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirstCollection" aria-expanded="false" aria-controls="collapseFirstCollection">
+                Bins for First Collection
+            </button>
+        </h2>
+        <div id="collapseFirstCollection" class="accordion-collapse collapse" aria-labelledby="headingFirstCollection" data-bs-parent="#accordionFirstCollection">
+            <div class="accordion-body">
+                <ul class="list-group">
+                    @foreach (var bin in ViewBag.BinsForFirstCollection)
+                    {
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Bin #@bin.BinNumber</h5>
+                                <small>
+                                    @bin.FillLevel.ToString("F2")% full,
+                                    @bin.Weight.ToString("F2") kg
+                                </small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Predicted Collection Date:</strong>
+                                @if (bin.PredictedFullDate != null)
+                                {
+                                    @bin.PredictedFullDate?.ToString("f")
+                                }
+                                else
+                                {
+                                    @:N/A
+                                }
+                            </p>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Bins for the first collection -->
-<h4>Bins for First Collection:</h4>
-<ul>
-    @foreach (var bin in ViewBag.BinsForFirstCollection)
-    {
-        <li>
-            Bin #@bin.BinNumber: @bin.FillLevel% full, @bin.Weight kg
-            <strong>Predicted Collection Date:</strong> @bin.PredictedFullDate?.ToString("f") ?? "N/A"
-        </li>
-    }
-</ul>
-<div class="mb-2">
-    <button id="routeBtn" class="btn btn-primary ms-2">Calculate Route</button>
+<!-- Horizontal line to separate the first accordion and second card -->
+<hr class="my-4">
+
+<!-- Second Collection Information -->
+<div class="card mb-3">
+    <div class="card-header">
+        <strong>Second Collection Info</strong>
+    </div>
+    <div class="card-body">
+        <p><strong>Second Collection Date:</strong> @ViewBag.SecondCollectionDate.ToString("f")</p>
+        <p><strong>Total Weight for Second Collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightSecondCollection)</p>
+        <p><strong>Wagons Needed:</strong> @ViewBag.WagonsForSecondCollection</p>
+
+        <!-- Calculate Route Button for Second Collection -->
+        <div class="mb-2">
+            <button id="routeBtn2" class="btn btn-primary ms-2">Calculate Route</button>
+        </div>
+        <!-- Toggle checkbox for Second Collection Route -->
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="toggleRouteSecond" checked />
+            <label class="form-check-label" for="toggleRouteSecond">
+                Show Second Collection Route
+            </label>
+        </div>
+    </div>
 </div>
 
-<!-- Bins for the second collection -->
-<h4>Bins for Second Collection:</h4>
-<ul>
-    @foreach (var bin in ViewBag.BinsForSecondCollection)
-    {
-        <li>
-            Bin #@bin.BinNumber: @bin.FillLevel% full, @bin.Weight kg
-            <strong>Predicted Collection Date:</strong> @bin.PredictedFullDate?.ToString("f") ?? "N/A"
-        </li>
-    }
-</ul>
-
-<div class="mb-2">
-    <button id="routeBtn2" class="btn btn-primary ms-2">Calculate Route</button>
+<!-- Accordion for Bins in Second Collection -->
+<div class="accordion" id="accordionSecondCollection">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSecondCollection">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecondCollection" aria-expanded="false" aria-controls="collapseSecondCollection">
+                Bins for Second Collection
+            </button>
+        </h2>
+        <div id="collapseSecondCollection" class="accordion-collapse collapse" aria-labelledby="headingSecondCollection" data-bs-parent="#accordionSecondCollection">
+            <div class="accordion-body">
+                <ul class="list-group">
+                    @foreach (var bin in ViewBag.BinsForSecondCollection)
+                    {
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Bin #@bin.BinNumber</h5>
+                                <small>
+                                    @bin.FillLevel.ToString("F2")% full,
+                                    @bin.Weight.ToString("F2") kg
+                                </small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Predicted Collection Date:</strong>
+                                @if (bin.PredictedFullDate != null)
+                                {
+                                    @bin.PredictedFullDate?.ToString("f")
+                                }
+                                else
+                                {
+                                    @:N/A
+                                }
+                            </p>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-
+<!-- Horizontal line to separate the second accordion and the map -->
+<hr class="my-4">
 <div id="map" style="height: 500px; width: 100%;"></div>
 
 <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
@@ -220,7 +312,3 @@
         };
     });
 </script>
-
-
-
-
