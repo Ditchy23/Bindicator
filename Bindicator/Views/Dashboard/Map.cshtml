@@ -189,36 +189,39 @@
         // Adding markers for bins in both collections
         function addMarkers(bins) {
             bins.forEach(bin => {
-                const fillColor = getFillColor(bin.fillLevel);
+                // Skip bins with invalid latitude and longitude (0,0)
+                if (bin.latitude !== 0 && bin.longitude !== 0) {
+                    const fillColor = getFillColor(bin.fillLevel);
 
-                const marker = new atlas.HtmlMarker({
-                    position: [bin.longitude, bin.latitude],
-                    text: `${bin.binNumber}`,
-                    color: fillColor
-                });
+                    const marker = new atlas.HtmlMarker({
+                        position: [bin.longitude, bin.latitude],
+                        text: `${bin.binNumber}`,
+                        color: fillColor
+                    });
 
-                // Expand map bounds
-                if (!bounds) {
-                    bounds = [[bin.longitude, bin.latitude], [bin.longitude, bin.latitude]];
-                } else {
-                    bounds[0][0] = Math.min(bounds[0][0], bin.longitude);
-                    bounds[0][1] = Math.min(bounds[0][1], bin.latitude);
-                    bounds[1][0] = Math.max(bounds[1][0], bin.longitude);
-                    bounds[1][1] = Math.max(bounds[1][1], bin.latitude);
+                    // Expand map bounds
+                    if (!bounds) {
+                        bounds = [[bin.longitude, bin.latitude], [bin.longitude, bin.latitude]];
+                    } else {
+                        bounds[0][0] = Math.min(bounds[0][0], bin.longitude);
+                        bounds[0][1] = Math.min(bounds[0][1], bin.latitude);
+                        bounds[1][0] = Math.max(bounds[1][0], bin.longitude);
+                        bounds[1][1] = Math.max(bounds[1][1], bin.latitude);
+                    }
+
+                    const popupContent = document.createElement('div');
+                    popupContent.innerHTML = `
+                        <strong>Bin #${bin.binNumber}</strong><br/>
+                        <strong>Fill Level:</strong> ${bin.fillLevel}%<br/>
+                        <strong>Weight:</strong> ${bin.weight} kg<br/>
+                        <strong>Predicted Full Date:</strong> ${bin.predictedFullDate ? new Date(bin.predictedFullDate).toLocaleString() : 'N/A'}`;
+
+                    const popup = new atlas.Popup({ position: [bin.longitude, bin.latitude] });
+                    popup.setOptions({ content: popupContent });
+
+                    map.markers.add(marker);
+                    map.events.add('click', marker, () => popup.open(map));
                 }
-
-                const popupContent = document.createElement('div');
-                popupContent.innerHTML = `
-                    <strong>Bin #${bin.binNumber}</strong><br/>
-                    <strong>Fill Level:</strong> ${bin.fillLevel}%<br/>
-                    <strong>Weight:</strong> ${bin.weight} kg<br/>
-                    <strong>Predicted Full Date:</strong> ${bin.predictedFullDate ? new Date(bin.predictedFullDate).toLocaleString() : 'N/A'}`;
-
-                const popup = new atlas.Popup({ position: [bin.longitude, bin.latitude] });
-                popup.setOptions({ content: popupContent });
-
-                map.markers.add(marker);
-                map.events.add('click', marker, () => popup.open(map));
             });
 
             // Log the bounds and camera settings
@@ -330,5 +333,6 @@
         });
     });
 </script>
+
 
 

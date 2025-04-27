@@ -109,6 +109,8 @@ public class MqttSubscriberService : BackgroundService
                             data.Street = street;
                             data.BinNumber = binNumber;
                             data.Timestamp = DateTime.UtcNow;
+                            data.Latitude = data.Latitude;
+                            data.Longitude = data.Longitude;
 
                             db.SensorReadings.Add(data);
                             Console.WriteLine("💾 SensorData added to DB context.");
