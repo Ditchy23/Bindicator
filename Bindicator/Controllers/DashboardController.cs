@@ -145,7 +145,7 @@ namespace Bindicator.Controllers
             ViewBag.WagonsForSecondCollection = wagonsForSecondCollection;
             ViewBag.BinsForFirstCollection = binsForFirstCollection;
             ViewBag.BinsForSecondCollection = binsForSecondCollection;
-
+            ViewBag.AllBins = viewModel;
             return View(viewModel);
         }
 
