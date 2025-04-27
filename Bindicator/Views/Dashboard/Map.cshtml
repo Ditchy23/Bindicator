@@ -25,15 +25,13 @@
         </div>
         <!-- Toggle checkbox for First Collection Route -->
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="toggleRouteFirst" checked />
+            <input class="form-check-input" type="checkbox" id="toggleRouteFirst" disabled />
             <label class="form-check-label" for="toggleRouteFirst">
-                Show First Collection Route
+                Toggle route display on map
             </label>
         </div>
     </div>
 </div>
-
-
 
 <!-- Accordion for Bins in First Collection -->
 <div class="accordion" id="accordionFirstCollection">
@@ -50,7 +48,11 @@
                     {
                         <li class="list-group-item">
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">Bin #@bin.BinNumber</h5>
+                                <p class="mb-1">
+                                    <strong>Street:</strong> @bin.Street<br />
+                                    <strong>Postcode:</strong> @bin.Postcode<br />
+                                    <strong>Bin #</strong>@bin.BinNumber
+                                </p>
                                 <small>
                                     @bin.FillLevel.ToString("F2")% full,
                                     @bin.Weight.ToString("F2") kg
@@ -64,7 +66,7 @@
                                 }
                                 else
                                 {
-                                    @:N/A
+                                    @:N/A, bin is full or almost full
                                 }
                             </p>
                         </li>
@@ -75,7 +77,6 @@
     </div>
 </div>
 
-<!-- Horizontal line to separate the first accordion and second card -->
 <hr class="my-4">
 
 <!-- Second Collection Information -->
@@ -94,9 +95,9 @@
         </div>
         <!-- Toggle checkbox for Second Collection Route -->
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="toggleRouteSecond" checked />
+            <input class="form-check-input" type="checkbox" id="toggleRouteSecond" disabled />
             <label class="form-check-label" for="toggleRouteSecond">
-                Show Second Collection Route
+                Toggle route display on map
             </label>
         </div>
     </div>
@@ -117,7 +118,11 @@
                     {
                         <li class="list-group-item">
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">Bin #@bin.BinNumber</h5>
+                                <p class="mb-1">
+                                    <strong>Street:</strong> @bin.Street<br />
+                                    <strong>Postcode:</strong> @bin.Postcode<br />
+                                    <strong>Bin #</strong>@bin.BinNumber
+                                </p>
                                 <small>
                                     @bin.FillLevel.ToString("F2")% full,
                                     @bin.Weight.ToString("F2") kg
@@ -131,7 +136,7 @@
                                 }
                                 else
                                 {
-                                    @:N/A
+                                    @:N/A, bin is full or almost full
                                 }
                             </p>
                         </li>
@@ -142,8 +147,8 @@
     </div>
 </div>
 
-<!-- Horizontal line to separate the second accordion and the map -->
 <hr class="my-4">
+
 <div id="map" style="height: 500px; width: 100%;"></div>
 
 <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
@@ -258,6 +263,9 @@
 
                 routeLineLayerFirst = new atlas.layer.LineLayer(routeLineSourceFirst, null, { strokeColor: '#00BFFF', strokeWidth: 5 });
                 map.layers.add(routeLineLayerFirst);
+
+                // Enable the toggle checkbox once the route is added
+                document.getElementById("toggleRouteFirst").disabled = false; // Enable toggle for the first collection route
             }
         };
 
@@ -290,6 +298,9 @@
 
                 routeLineLayerSecond = new atlas.layer.LineLayer(routeLineSourceSecond, null, { strokeColor: '#00FF00', strokeWidth: 5 });
                 map.layers.add(routeLineLayerSecond);
+
+                // Enable the toggle checkbox once the route is added
+                document.getElementById("toggleRouteSecond").disabled = false; // Enable toggle for the second collection route
             }
         };
 
@@ -319,4 +330,5 @@
         });
     });
 </script>
+
 
