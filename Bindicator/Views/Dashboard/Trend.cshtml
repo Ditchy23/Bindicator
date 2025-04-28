@@ -25,6 +25,11 @@
     <i class="fas fa-arrow-left"></i> Back to Dashboard
 </a>
 
+<div id="updateStatus" class="text-info mb-3" style="display: none;">
+    <i class="fas fa-sync fa-spin"></i> Updating data...
+</div>
+
+
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm">
@@ -146,70 +151,111 @@ else
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
 
-<script>
+    <script>
         Chart.register(window['chartjs-plugin-annotation']);
 
-         const labels = @Html.Raw(Json.Serialize(labels));
+        const labels = @Html.Raw(Json.Serialize(labels));
 
-         const chartConfigs = [
-             { id: "fillChart",     data: @Html.Raw(Json.Serialize(fillLevels)), label: "Fill Level (%)",    color: "blue" },
-             { id: "weightChart",   data: @Html.Raw(Json.Serialize(weights)),       label: "Weight (kg)",       color: "red" },
-             { id: "densityChart",  data: @Html.Raw(Json.Serialize(densities)),     label: "Density",           color: "green" },
-             { id: "temperatureChart", data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
-             { id: "humidityChart", data: @Html.Raw(Json.Serialize(humidities)),    label: "Humidity (%)",      color: "purple" }
-         ];
+        const chartConfigs = [
+            { id: "fillChart", data: @Html.Raw(Json.Serialize(fillLevels)), label: "Fill Level (%)", color: "blue" },
+            { id: "weightChart", data: @Html.Raw(Json.Serialize(weights)), label: "Weight (kg)", color: "red" },
+            { id: "densityChart", data: @Html.Raw(Json.Serialize(densities)), label: "Density", color: "green" },
+            { id: "temperatureChart", data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
+            { id: "humidityChart", data: @Html.Raw(Json.Serialize(humidities)), label: "Humidity (%)", color: "purple" }
+        ];
 
-         chartConfigs.forEach(cfg => {
-             const ctx = document.getElementById(cfg.id)?.getContext('2d');
-             if (!ctx) return;
-             new Chart(ctx, {
-                 type: 'line',
-                 data: {
-                     labels: labels,
-                     datasets: [{
-                         label: cfg.label,
-                         data: cfg.data,
-                         borderColor: cfg.color,
-                         backgroundColor: 'rgba(0,0,0,0.07)',
-                         tension: 0.2,
-                         fill: false
-                     }]
-                 },
-                 options: {
-                     responsive: true,
-                     plugins: { legend: { display: false } },
-                     scales: {
-                         x: { title: { display: true, text: 'Time' } },
-                         y: { beginAtZero: true, title: { display: true, text: cfg.label } }
-                     }
-                 }
-             });
-         });
+        const charts = []; // Save all chart instances
 
-        // Set up the SignalR connection
+        // Initialize charts
+        chartConfigs.forEach(cfg => {
+            const ctx = document.getElementById(cfg.id)?.getContext('2d');
+            if (!ctx) return;
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: cfg.label,
+                        data: cfg.data,
+                        borderColor: cfg.color,
+                        backgroundColor: 'rgba(0,0,0,0.07)',
+                        tension: 0.2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Time' } },
+                        y: { beginAtZero: true, title: { display: true, text: cfg.label } }
+                    }
+                }
+            });
+            charts.push(chart); // Push into the array
+        });
+
+        // Update all charts with new data
+        function updateCharts(data) {
+            charts.forEach(chart => {
+                chart.data.labels = data.labels;
+            });
+
+            charts[0].data.datasets[0].data = data.fillLevels;
+            charts[1].data.datasets[0].data = data.weights;
+            charts[2].data.datasets[0].data = data.densities;
+            charts[3].data.datasets[0].data = data.temperatures;
+            charts[4].data.datasets[0].data = data.humidities;
+
+            charts.forEach(chart => {
+                chart.update();
+            });
+        }
+
+        // Set up SignalR connection
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/binStatusHub")
             .build();
 
-        // Listen for trend update messages for this bin
+        // Handle incoming trend update events
         connection.on("ReceiveTrendUpdate", function (postcode, street, binNumber) {
-            // These should match the current view's bin
             const thisPostcode = "@Model.Postcode".toUpperCase();
             const thisStreet = "@Model.Street".toUpperCase();
             const thisBinNumber = "@Model.BinNumber";
 
-            // If the update matches this view, reload the partial)
             if (
                 postcode.toUpperCase() === thisPostcode &&
                 street.toUpperCase() === thisStreet &&
                 binNumber == thisBinNumber
             ) {
-                location.reload();
+                const updateStatus = document.getElementById('updateStatus');
+
+                // Show "Updating..." spinner
+                updateStatus.style.display = 'block';
+                updateStatus.style.opacity = '1';
+                updateStatus.style.transition = 'none';
+
+                fetch(`/Dashboard/GetLatestTrendData?postcode=${postcode}&street=${street}&binNumber=${binNumber}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateCharts(data);
+                    })
+                    .catch(error => console.error('Error fetching trend data:', error))
+                    .finally(() => {
+                        // Fade out "Updating..." spinner
+                        setTimeout(() => {
+                            updateStatus.style.transition = 'opacity 0.5s ease-out';
+                            updateStatus.style.opacity = '0';
+                            setTimeout(() => {
+                                updateStatus.style.display = 'none';
+                            }, 500);
+                        }, 500); // Wait a little to let user see it
+                    });
             }
         });
 
         connection.start().catch(function (err) {
             return console.error(err.toString());
         });
-</script>
+    </script>
 }

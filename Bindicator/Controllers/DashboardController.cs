@@ -61,6 +61,23 @@ namespace Bindicator.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetLatestTrendData(string postcode, string street, int binNumber)
+        {
+            var viewModel = await _binTrend.GetTrendAsync(postcode, street, binNumber);
+
+            return Json(new
+            {
+                labels = viewModel.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList(),
+                fillLevels = viewModel.Readings.Select(r => r.FillLevel).ToList(),
+                weights = viewModel.Readings.Select(r => r.Weight).ToList(),
+                densities = viewModel.Readings.Select(r => r.Density).ToList(),
+                temperatures = viewModel.EnvironmentReadings.Select(r => r.Temperature).ToList(),
+                humidities = viewModel.EnvironmentReadings.Select(r => r.Humidity).ToList()
+            });
+        }
+
+
         /// <summary>
         /// Gets the latest bin statuses and returns a partial view.
         /// </summary>
