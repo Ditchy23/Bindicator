@@ -108,7 +108,7 @@ namespace Bindicator.Services
                 WarningHistory = warningHistory
             };
 
-            // Use the helper method to calculate the predicted full date
+            // Predicatuin helper method to calculate the predicted full date
             PredictionHelper.CalculatePredictedFullDate(readings, viewModel);
 
             return viewModel;
