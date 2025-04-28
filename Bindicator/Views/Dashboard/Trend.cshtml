@@ -3,12 +3,15 @@
 @{
     ViewData["Title"] = "B-inspirations";
 
-    var labels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
+    var sensorLabels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
+    var environmentLabels = Model.EnvironmentReadings.Select(e => e.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
+
     var fillLevels = Model.Readings.Select(r => r.FillLevel).ToList();
     var weights = Model.Readings.Select(r => r.Weight).ToList();
     var densities = Model.Readings.Select(r => r.Density).ToList();
     var temperatures = Model.EnvironmentReadings.Select(e => e.Temperature).ToList();
     var humidities = Model.EnvironmentReadings.Select(e => e.Humidity).ToList();
+
     var recentCutoff = DateTime.UtcNow.AddHours(-24);
     var recentWarnings = Model.WarningHistory.Where(w => w.Timestamp > recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
     var historicalWarnings = Model.WarningHistory.Where(w => w.Timestamp <= recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
@@ -146,34 +149,33 @@ else
 }
 
 
-@section Scripts{
-<!-- Chart.js & Annotations plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
 
     <script>
         Chart.register(window['chartjs-plugin-annotation']);
 
-        const labels = @Html.Raw(Json.Serialize(labels));
+        const sensorLabels = @Html.Raw(Json.Serialize(sensorLabels));
+        const environmentLabels = @Html.Raw(Json.Serialize(environmentLabels));
 
         const chartConfigs = [
-            { id: "fillChart", data: @Html.Raw(Json.Serialize(fillLevels)), label: "Fill Level (%)", color: "blue" },
-            { id: "weightChart", data: @Html.Raw(Json.Serialize(weights)), label: "Weight (kg)", color: "red" },
-            { id: "densityChart", data: @Html.Raw(Json.Serialize(densities)), label: "Density", color: "green" },
-            { id: "temperatureChart", data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
-            { id: "humidityChart", data: @Html.Raw(Json.Serialize(humidities)), label: "Humidity (%)", color: "purple" }
+            { id: "fillChart", labels: sensorLabels, data: @Html.Raw(Json.Serialize(fillLevels)), label: "Fill Level (%)", color: "blue" },
+            { id: "weightChart", labels: sensorLabels, data: @Html.Raw(Json.Serialize(weights)), label: "Weight (kg)", color: "red" },
+            { id: "densityChart", labels: sensorLabels, data: @Html.Raw(Json.Serialize(densities)), label: "Density", color: "green" },
+            { id: "temperatureChart", labels: environmentLabels, data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
+            { id: "humidityChart", labels: environmentLabels, data: @Html.Raw(Json.Serialize(humidities)), label: "Humidity (%)", color: "purple" }
         ];
 
-        const charts = []; // Save all chart instances
+        const charts = [];
 
-        // Initialize charts
         chartConfigs.forEach(cfg => {
             const ctx = document.getElementById(cfg.id)?.getContext('2d');
             if (!ctx) return;
             const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: cfg.labels,
                     datasets: [{
                         label: cfg.label,
                         data: cfg.data,
@@ -192,45 +194,24 @@ else
                     }
                 }
             });
-            charts.push(chart); // Push into the array
+            charts.push(chart);
         });
 
-        // Update all charts with new data
-        function updateCharts(data) {
-            charts.forEach(chart => {
-                chart.data.labels = data.labels;
-            });
-
-            charts[0].data.datasets[0].data = data.fillLevels;
-            charts[1].data.datasets[0].data = data.weights;
-            charts[2].data.datasets[0].data = data.densities;
-            charts[3].data.datasets[0].data = data.temperatures;
-            charts[4].data.datasets[0].data = data.humidities;
-
-            charts.forEach(chart => {
-                chart.update();
-            });
-        }
-
-        // Set up SignalR connection
+        // SignalR connection handling (no change needed here)
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/binStatusHub")
             .build();
 
-        // Handle incoming trend update events
         connection.on("ReceiveTrendUpdate", function (postcode, street, binNumber) {
             const thisPostcode = "@Model.Postcode".toUpperCase();
             const thisStreet = "@Model.Street".toUpperCase();
             const thisBinNumber = "@Model.BinNumber";
 
-            if (
-                postcode.toUpperCase() === thisPostcode &&
+            if (postcode.toUpperCase() === thisPostcode &&
                 street.toUpperCase() === thisStreet &&
-                binNumber == thisBinNumber
-            ) {
-                const updateStatus = document.getElementById('updateStatus');
+                binNumber == thisBinNumber) {
 
-                // Show "Updating..." spinner
+                const updateStatus = document.getElementById('updateStatus');
                 updateStatus.style.display = 'block';
                 updateStatus.style.opacity = '1';
                 updateStatus.style.transition = 'none';
@@ -242,14 +223,13 @@ else
                     })
                     .catch(error => console.error('Error fetching trend data:', error))
                     .finally(() => {
-                        // Fade out "Updating..." spinner
                         setTimeout(() => {
                             updateStatus.style.transition = 'opacity 0.5s ease-out';
                             updateStatus.style.opacity = '0';
                             setTimeout(() => {
                                 updateStatus.style.display = 'none';
                             }, 500);
-                        }, 500); // Wait a little to let user see it
+                        }, 500);
                     });
             }
         });
@@ -257,5 +237,13 @@ else
         connection.start().catch(function (err) {
             return console.error(err.toString());
         });
+
+        function updateCharts(data) {
+            charts.forEach((chart, idx) => {
+                chart.data.datasets[0].data = data.datasets[idx].data;
+                chart.data.labels = data.datasets[idx].labels;
+                chart.update();
+            });
+        }
     </script>
 }
