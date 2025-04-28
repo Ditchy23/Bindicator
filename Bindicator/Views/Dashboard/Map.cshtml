@@ -265,7 +265,7 @@
         document.getElementById("routeBtn").onclick = async function() {
             // Only add the route once
             if (!routeLineLayerFirst) {
-                const firstCollectionWaypoints = binsFirstCollection.map(bin => `${bin.latitude},${bin.longitude}`);
+                const firstCollectionWaypoints = binsFirstCollection.map(bin => `${bin.latitude},${bin.longitude}`).filter(waypoint => waypoint !== "0,0"); // Exclude invalid waypoints (0,0);
                 if (firstCollectionWaypoints.length < 2) {
                     alert("Not enough valid bins in the first collection for routing.");
                     return;
@@ -301,7 +301,7 @@
         document.getElementById("routeBtn2").onclick = async function() {
             // Only add the route once
             if (!routeLineLayerSecond) {
-                const secondCollectionWaypoints = binsSecondCollection.map(bin => `${bin.latitude},${bin.longitude}`);
+                const secondCollectionWaypoints = binsSecondCollection.map(bin => `${bin.latitude},${bin.longitude}`).filter(waypoint => waypoint !== "0,0"); // Exclude invalid waypoints (0,0);
                 console.log("Generated Route URL:", routeUrlSecod);  // Log the full URL
                 if (secondCollectionWaypoints.length < 2) {
                     alert("Not enough valid bins in the second collection for routing.");
