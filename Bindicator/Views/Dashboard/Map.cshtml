@@ -11,7 +11,6 @@
 <p class="lead">Click on the markers to see more details about each bin.</p>
 <p>By default only bins ready to be included in the collections are displayed.</p>
 <p>If you want to see the location of all bins use the toggle under the map. These bins are not routed.</p>
-
 <!-- First Collection Information -->
 <div class="card mb-3">
     <div class="card-header">
@@ -199,67 +198,51 @@
         let bounds = null;
 
         // Adding markers for bins
-            function addMarkers(bins) {
-        bins.forEach(bin => {
-            // Use correct property casing for JS (check your JSON output!)
-            const postcode = bin.postcode || bin.Postcode;
-            const street = bin.street || bin.Street;
-            const binNumber = bin.binNumber || bin.BinNumber;
+        function addMarkers(bins) {
+            bins.forEach(bin => {
+                // Skip bins with invalid latitude and longitude (0,0)
+                if (bin.latitude !== 0 && bin.longitude !== 0) {
+                    const fillColor = getFillColor(bin.fillLevel);
 
-            // Skip bins with invalid latitude and longitude (0,0)
-            if ((bin.latitude || bin.Latitude) !== 0 && (bin.longitude || bin.Longitude) !== 0) {
-                const lat = bin.latitude || bin.Latitude;
-                const lon = bin.longitude || bin.Longitude;
-                const fillLevel = bin.fillLevel !== undefined ? bin.fillLevel : bin.FillLevel;
-                const weight = bin.weight !== undefined ? bin.weight : bin.Weight;
-                const predictedFullDate = bin.predictedFullDate || bin.PredictedFullDate;
+                    const marker = new atlas.HtmlMarker({
+                        position: [bin.longitude, bin.latitude],
+                        text: `${bin.binNumber}`,
+                        color: fillColor
+                    });
 
-                const fillColor = getFillColor(fillLevel);
+                    // Expand map bounds
+                    if (!bounds) {
+                        bounds = [[bin.longitude, bin.latitude], [bin.longitude, bin.latitude]];
+                    } else {
+                        bounds[0][0] = Math.min(bounds[0][0], bin.longitude);
+                        bounds[0][1] = Math.min(bounds[0][1], bin.latitude);
+                        bounds[1][0] = Math.max(bounds[1][0], bin.longitude);
+                        bounds[1][1] = Math.max(bounds[1][1], bin.latitude);
+                    }
 
-                const marker = new atlas.HtmlMarker({
-                    position: [lon, lat],
-                    text: `${binNumber}`,
-                    color: fillColor
-                });
+                    const popupContent = document.createElement('div');
+                    popupContent.innerHTML = `
+                        <strong>Bin #${bin.binNumber}</strong><br/>
+                        <strong>Fill Level:</strong> ${bin.fillLevel.toFixed(2)}%<br/>
+                        <strong>Weight:</strong> ${bin.weight.toFixed(2)} kg<br/>
+                        <strong>Predicted Full Date:</strong> ${bin.predictedFullDate ? new Date(bin.predictedFullDate).toLocaleString() : 'N/A'}`;
 
-                // Expand map bounds
-                if (!bounds) {
-                    bounds = [[lon, lat], [lon, lat]];
-                } else {
-                    bounds[0][0] = Math.min(bounds[0][0], lon);
-                    bounds[0][1] = Math.min(bounds[0][1], lat);
-                    bounds[1][0] = Math.max(bounds[1][0], lon);
-                    bounds[1][1] = Math.max(bounds[1][1], lat);
+                    const popup = new atlas.Popup({ position: [bin.longitude, bin.latitude] });
+                    popup.setOptions({ content: popupContent });
+
+                    map.markers.add(marker);
+                    map.events.add('click', marker, () => popup.open(map));
                 }
-
-                // Trend link (make sure you encodeURIComponent)
-                const trendUrl = `/Dashboard/Trend?postcode=${encodeURIComponent(postcode)}&street=${encodeURIComponent(street)}&binNumber=${encodeURIComponent(binNumber)}`;
-
-                const popupContent = document.createElement('div');
-                popupContent.innerHTML = `
-                    <strong>Bin #${binNumber}</strong><br/>
-                    <strong>Fill Level:</strong> ${Number(fillLevel).toFixed(2)}%<br/>
-                    <strong>Weight:</strong> ${Number(weight).toFixed(2)} kg<br/>
-                    <strong>Predicted Full Date:</strong> ${predictedFullDate ? new Date(predictedFullDate).toLocaleString() : 'N/A'}<br/>
-                    <a href="${trendUrl}" target="_blank" class="btn btn-link p-0 mt-1">View Bin Trend</a>
-                `;
-
-                const popup = new atlas.Popup({ position: [lon, lat] });
-                popup.setOptions({ content: popupContent });
-
-                map.markers.add(marker);
-                map.events.add('click', marker, () => popup.open(map));
-            }
-        });
-
-        // Log the bounds and camera settings
-        if (bounds && bins.length > 1) {
-            map.setCamera({
-                bounds: atlas.data.BoundingBox.fromPositions([bounds[0], bounds[1]]),
-                padding: 60
             });
+
+            // Log the bounds and camera settings
+            if (bounds && bins.length > 1) {
+                map.setCamera({
+                    bounds: atlas.data.BoundingBox.fromPositions([bounds[0], bounds[1]]),
+                    padding: 60
+                });
+            }
         }
-    }
 
         // Add markers for first and second collection bins
         addMarkers(binsFirstCollection);
@@ -376,3 +359,6 @@
         });
     });
 </script>
+
+
+
