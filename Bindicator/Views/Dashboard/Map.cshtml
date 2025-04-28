@@ -302,14 +302,14 @@
             // Only add the route once
             if (!routeLineLayerSecond) {
                 const secondCollectionWaypoints = binsSecondCollection.map(bin => `${bin.latitude},${bin.longitude}`).filter(waypoint => waypoint !== "0,0"); // Exclude invalid waypoints (0,0);
-                console.log("Generated Route URL:", routeUrlSecod);  // Log the full URL
+                console.log("Generated Route URL:", routeUrlSecond);  // Log the full URL
                 if (secondCollectionWaypoints.length < 2) {
                     alert("Not enough valid bins in the second collection for routing.");
                     return;
                 }
 
                 const routeUrlSecond = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${secondCollectionWaypoints.join(':')}`;
-                console.log("Generated Route URL:", routeUrlSecod);  // Log the full URL
+                console.log("Generated Route URL:", routeUrlSecond);  // Log the full URL
                 const responseSecond = await fetch(routeUrlSecond);
                 const dataSecond = await responseSecond.json();
 
