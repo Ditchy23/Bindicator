@@ -89,6 +89,8 @@ public class MqttSubscriberService : BackgroundService
                     using var scope = _scopeFactory.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+                    bool dataSaved = false;
+
                     try
                     {
                         if (topic.EndsWith("Sensors/Current", StringComparison.OrdinalIgnoreCase))
@@ -98,7 +100,6 @@ public class MqttSubscriberService : BackgroundService
                                 PropertyNameCaseInsensitive = true
                             });
 
-                            // Guard against null data
                             if (data == null)
                             {
                                 Console.WriteLine("⚠️  SensorData deserialization failed.");
@@ -109,11 +110,10 @@ public class MqttSubscriberService : BackgroundService
                             data.Street = street;
                             data.BinNumber = binNumber;
                             data.Timestamp = DateTime.UtcNow;
-                            data.Latitude = data.Latitude;
-                            data.Longitude = data.Longitude;
 
                             db.SensorReadings.Add(data);
                             Console.WriteLine("💾 SensorData added to DB context.");
+                            dataSaved = true;
                         }
                         else if (topic.EndsWith("Environment/Current", StringComparison.OrdinalIgnoreCase))
                         {
@@ -122,7 +122,6 @@ public class MqttSubscriberService : BackgroundService
                                 PropertyNameCaseInsensitive = true
                             });
 
-                            // Guard against null data
                             if (data == null)
                             {
                                 Console.WriteLine("⚠️  EnvironmentData deserialization failed.");
@@ -136,22 +135,25 @@ public class MqttSubscriberService : BackgroundService
 
                             db.EnvironmentReadings.Add(data);
                             Console.WriteLine("💾 EnvironmentData added to DB context.");
+                            dataSaved = true;
                         }
                         else
                         {
-                            // Unrecognized topic, does not match any known sensor/environment message
-                            Console.WriteLine("⚠️  Topic not recognized as a supported sensor/environment message. Skipping.");
+                            Console.WriteLine("⚠️  Topic not recognized as supported. Skipping.");
                             return;
                         }
 
-                        var changes = await db.SaveChangesAsync(stoppingToken);
-                        Console.WriteLine($"✅ DB changes saved: {changes} row(s) affected.");
+                        if (dataSaved)
+                        {
+                            var changes = await db.SaveChangesAsync(stoppingToken);
+                            Console.WriteLine($"✅ DB changes saved: {changes} row(s) affected.");
 
-                        // Notify SignalR clients
-                        await _hubContext.Clients.All.SendAsync("ReceiveTrendUpdate", postcode, street, binNumber);
-                        await _hubContext.Clients.All.SendAsync("ReceiveBinUpdate");
+                            // 🔥 Always notify SignalR if anything saved
+                            await _hubContext.Clients.All.SendAsync("ReceiveTrendUpdate", postcode, street, binNumber);
+                            await _hubContext.Clients.All.SendAsync("ReceiveBinUpdate");
 
-                        Console.WriteLine("🔔 SignalR notifications sent.");
+                            Console.WriteLine("🔔 SignalR notifications sent.");
+                        }
                     }
                     catch (Exception ex)
                     {
