@@ -1,10 +1,10 @@
 ﻿@model List<Bindicator.ViewModels.SensorDataViewModel>
 
 @{
-    ViewData["Title"] = "Bin Locations";
+    ViewData["Title"] = "Bin locations";
 }
 
-<h2>Bin Locations</h2>
+<h2>Bin locations</h2>
 <p class="lead">This page displays the locations of bins and their fill levels.</p>
 <p class="lead">The map below shows the locations of bins and routes for the next priority collection and the follwing collection based on their predicted fullness.</p>
 <p class="lead">Bins in the priority collection are either full now or will be full within 24hrs</p>
@@ -14,16 +14,16 @@
 <!-- First Collection Information -->
 <div class="card mb-3">
     <div class="card-header">
-        <strong>Priority Collection Info</strong>
+        <strong>Priority collection info</strong>
     </div>
     <div class="card-body">
-        <p><strong>Priority Collection Date:</strong> @ViewBag.FirstCollectionDate.ToString("f")</p>
-        <p><strong>Total Weight for Priority Collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightFirstCollection)</p>
-        <p><strong>Wagons Needed:</strong> @ViewBag.WagonsForFirstCollection</p>
+        <p><strong>Priority collection date:</strong> @ViewBag.FirstCollectionDate.ToString("f")</p>
+        <p><strong>Total weight for priority collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightFirstCollection)</p>
+        <p><strong>Wagons needed:</strong> @ViewBag.WagonsForFirstCollection</p>
 
         <!-- Calculate Route Button for First Collection -->
         <div class="mb-2">
-            <button id="routeBtn" class="btn btn-primary ms-2">Calculate Route</button>
+            <button id="routeBtn" class="btn btn-primary ms-2">Calculate route</button>
         </div>
         <!-- Toggle checkbox for First Collection Route -->
         <div class="form-check">
@@ -40,7 +40,7 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="headingFirstCollection">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirstCollection" aria-expanded="false" aria-controls="collapseFirstCollection">
-                Bins for Priority Collection
+                Bins for priority collection
             </button>
         </h2>
         <div id="collapseFirstCollection" class="accordion-collapse collapse" aria-labelledby="headingFirstCollection" data-bs-parent="#accordionFirstCollection">
@@ -84,16 +84,16 @@
 <!-- Second Collection Information -->
 <div class="card mb-3">
     <div class="card-header">
-        <strong>Non-priority Collection Info</strong>
+        <strong>Non-priority collection info</strong>
     </div>
     <div class="card-body">
-        <p><strong>Non-priority Collection Date:</strong> @ViewBag.SecondCollectionDate.ToString("f")</p>
-        <p><strong>Total Weight for non-priority Collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightSecondCollection)</p>
-        <p><strong>Wagons Needed:</strong> @ViewBag.WagonsForSecondCollection</p>
+        <p><strong>Non-priority collection date:</strong> @ViewBag.SecondCollectionDate.ToString("f")</p>
+        <p><strong>Total weight for non-priority collection:</strong> @String.Format("{0:N2} kg", ViewBag.TotalWeightSecondCollection)</p>
+        <p><strong>Wagons needed:</strong> @ViewBag.WagonsForSecondCollection</p>
 
         <!-- Calculate Route Button for Second Collection -->
         <div class="mb-2">
-            <button id="routeBtn2" class="btn btn-primary ms-2">Calculate Route</button>
+            <button id="routeBtn2" class="btn btn-primary ms-2">Calculate route</button>
         </div>
         <!-- Toggle checkbox for Second Collection Route -->
         <div class="form-check">
@@ -110,7 +110,7 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="headingSecondCollection">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecondCollection" aria-expanded="false" aria-controls="collapseSecondCollection">
-                Bins for Non-priority Collection
+                Bins for non-priority collection
             </button>
         </h2>
         <div id="collapseSecondCollection" class="accordion-collapse collapse" aria-labelledby="headingSecondCollection" data-bs-parent="#accordionSecondCollection">

@@ -78,79 +78,85 @@ namespace Bindicator.Controllers
         /// <returns>The map view with the latest sensor readings.</returns>
         public async Task<IActionResult> Map()
         {
-            var bins = await _context.SensorReadings
-                .GroupBy(b => new { b.Postcode, b.Street, b.BinNumber, b.Latitude, b.Longitude })
-                .Select(g => g.OrderByDescending(b => b.Timestamp).First())
-                .ToListAsync();
-
-            var viewModel = bins.Select(b =>
+            try 
             {
-                var sensorDataViewModel = new Bindicator.ViewModels.SensorDataViewModel
+                var bins = await _context.SensorReadings
+                    .GroupBy(b => new { b.Postcode, b.Street, b.BinNumber, b.Latitude, b.Longitude })
+                    .Select(g => g.OrderByDescending(b => b.Timestamp).First())
+                    .ToListAsync();
+
+                var viewModel = bins.Select(b =>
                 {
-                    BinNumber = b.BinNumber,
-                    Latitude = b.Latitude,
-                    Longitude = b.Longitude,
-                    FillLevel = b.FillLevel,
-                    Weight = b.Weight,
-                    Timestamp = b.Timestamp,
-                    Postcode = b.Postcode,
-                    Street = b.Street
-                };
+                    var sensorDataViewModel = new Bindicator.ViewModels.SensorDataViewModel
+                    {
+                        BinNumber = b.BinNumber,
+                        Latitude = b.Latitude,
+                        Longitude = b.Longitude,
+                        FillLevel = b.FillLevel,
+                        Weight = b.Weight,
+                        Timestamp = b.Timestamp,
+                        Postcode = b.Postcode,
+                        Street = b.Street
+                    };
 
-                // Pull all readings for this bin for prediction
-                var allReadings = _context.SensorReadings
-                    .Where(r => r.Postcode == b.Postcode && r.Street == b.Street && r.BinNumber == b.BinNumber)
-                    .OrderBy(r => r.Timestamp)
-                    .ToList();
+                    // Pull all readings for this bin for prediction
+                    var allReadings = _context.SensorReadings
+                        .Where(r => r.Postcode == b.Postcode && r.Street == b.Street && r.BinNumber == b.BinNumber)
+                        .OrderBy(r => r.Timestamp)
+                        .ToList();
 
-                PredictionHelper.CalculatePredictedFullDate(allReadings, sensorDataViewModel);
+                    PredictionHelper.CalculatePredictedFullDate(allReadings, sensorDataViewModel);
 
-                return sensorDataViewModel;
-            }).ToList();
+                    return sensorDataViewModel;
+                }).ToList();
 
-            // Current Date to compare against predicted fullness dates
-            var currentDate = DateTime.UtcNow;
+                // Current Date to compare against predicted fullness dates
+                var currentDate = DateTime.UtcNow;
 
-            // First Collection (Priority) - Full or predicted to be full within 1 day
-            var binsForFirstCollection = viewModel.Where(bin =>
-                bin.FillLevel == 100 ||
-                (bin.PredictedFullDate.HasValue && bin.PredictedFullDate.Value <= currentDate.AddDays(1))
-            ).ToList();
+                // First Collection (Priority) - Full or predicted to be full within 1 day
+                var binsForFirstCollection = viewModel.Where(bin =>
+                    bin.FillLevel == 100 ||
+                    (bin.PredictedFullDate.HasValue && bin.PredictedFullDate.Value <= currentDate.AddDays(1))
+                ).ToList();
 
-            // Second Collection - Predicted to be full within the next 2 weeks, but not full yet
-            var binsForSecondCollection = viewModel.Where(bin =>
-                (bin.FillLevel < 100 &&
-                bin.PredictedFullDate.HasValue &&
-                bin.PredictedFullDate.Value > currentDate.AddDays(1) &&
-                bin.PredictedFullDate.Value <= currentDate.AddDays(14))
-            ).ToList();
+                // Second Collection - Predicted to be full within the next 2 weeks, but not full yet
+                var binsForSecondCollection = viewModel.Where(bin =>
+                    (bin.FillLevel < 100 &&
+                    bin.PredictedFullDate.HasValue &&
+                    bin.PredictedFullDate.Value > currentDate.AddDays(1) &&
+                    bin.PredictedFullDate.Value <= currentDate.AddDays(14))
+                ).ToList();
 
-            // Determine the collection dates based on the latest predicted full date in each list
-            DateTime firstCollectionDate = binsForFirstCollection.Max(bin => bin.PredictedFullDate) ?? DateTime.UtcNow;
-            DateTime secondCollectionDate = binsForSecondCollection.Max(bin => bin.PredictedFullDate) ?? DateTime.UtcNow.AddDays(14);
+                // Determine the collection dates based on the latest predicted full date in each list
+                DateTime firstCollectionDate = binsForFirstCollection.Max(bin => bin.PredictedFullDate) ?? DateTime.UtcNow;
+                DateTime secondCollectionDate = binsForSecondCollection.Max(bin => bin.PredictedFullDate) ?? DateTime.UtcNow.AddDays(14);
 
-            // Calculate total weight and wagons required for each collection date
-            double totalWeightFirstCollection = binsForFirstCollection.Sum(bin => bin.Weight);
-            double totalWeightSecondCollection = binsForSecondCollection.Sum(bin => bin.Weight);
+                // Calculate total weight and wagons required for each collection date
+                double totalWeightFirstCollection = binsForFirstCollection.Sum(bin => bin.Weight);
+                double totalWeightSecondCollection = binsForSecondCollection.Sum(bin => bin.Weight);
 
-            int wagonsForFirstCollection = (int)Math.Ceiling(totalWeightFirstCollection / 200); // Assuming 200kg per wagon
-            int wagonsForSecondCollection = (int)Math.Ceiling(totalWeightSecondCollection / 200);
+                int wagonsForFirstCollection = (int)Math.Ceiling(totalWeightFirstCollection / 200); // Assuming 200kg per wagon
+                int wagonsForSecondCollection = (int)Math.Ceiling(totalWeightSecondCollection / 200);
 
-            // Pass data to the view
-            ViewBag.FirstCollectionDate = firstCollectionDate;
-            ViewBag.SecondCollectionDate = secondCollectionDate;
-            ViewBag.TotalWeightFirstCollection = totalWeightFirstCollection;
-            ViewBag.TotalWeightSecondCollection = totalWeightSecondCollection;
-            ViewBag.WagonsForFirstCollection = wagonsForFirstCollection;
-            ViewBag.WagonsForSecondCollection = wagonsForSecondCollection;
-            ViewBag.BinsForFirstCollection = binsForFirstCollection;
-            ViewBag.BinsForSecondCollection = binsForSecondCollection;
-            ViewBag.AllBins = viewModel;
-            return View(viewModel);
+                // Pass data to the view
+                ViewBag.FirstCollectionDate = firstCollectionDate;
+                ViewBag.SecondCollectionDate = secondCollectionDate;
+                ViewBag.TotalWeightFirstCollection = totalWeightFirstCollection;
+                ViewBag.TotalWeightSecondCollection = totalWeightSecondCollection;
+                ViewBag.WagonsForFirstCollection = wagonsForFirstCollection;
+                ViewBag.WagonsForSecondCollection = wagonsForSecondCollection;
+                ViewBag.BinsForFirstCollection = binsForFirstCollection;
+                ViewBag.BinsForSecondCollection = binsForSecondCollection;
+                ViewBag.AllBins = viewModel;
+                return View(viewModel);
+
+            }
+            catch (Exception)
+            {
+                ViewBag.ErrorMessage = "🚫 Unable to load data. Please check your database connection.";
+                return View("NoData");
+            }
         }
-
-
-
 
         /// <summary>
         /// Displays the edit location view for a specific bin.
@@ -212,7 +218,7 @@ namespace Bindicator.Controllers
         public async Task<IActionResult> SeedData()
         {
             await DbSeeder.SeedAsync(_context);
-            return RedirectToAction("Index"); // or return Json if you're using AJAX
+            return RedirectToAction("Index");
         }
     }
 }
