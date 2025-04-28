@@ -223,8 +223,8 @@
                     const popupContent = document.createElement('div');
                     popupContent.innerHTML = `
                         <strong>Bin #${bin.binNumber}</strong><br/>
-                        <strong>Fill Level:</strong> ${bin.fillLevel}%<br/>
-                        <strong>Weight:</strong> ${bin.weight} kg<br/>
+                        <strong>Fill Level:</strong> ${bin.fillLevel.toFixed(2)}%<br/>
+                        <strong>Weight:</strong> ${bin.weight.toFixed(2)} kg<br/>
                         <strong>Predicted Full Date:</strong> ${bin.predictedFullDate ? new Date(bin.predictedFullDate).toLocaleString() : 'N/A'}`;
 
                     const popup = new atlas.Popup({ position: [bin.longitude, bin.latitude] });
