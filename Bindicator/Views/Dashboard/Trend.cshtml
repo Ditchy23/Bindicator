@@ -3,7 +3,9 @@
 @{
     ViewData["Title"] = "B-inspirations";
 
-    var labels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
+    var sensorLabels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
+    var environmentLabels = Model.EnvironmentReadings.Select(e => e.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
+
     var fillLevels = Model.Readings.Select(r => r.FillLevel).ToList();
     var weights = Model.Readings.Select(r => r.Weight).ToList();
     var densities = Model.Readings.Select(r => r.Density).ToList();
@@ -14,6 +16,7 @@
     var recentWarnings = Model.WarningHistory.Where(w => w.Timestamp > recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
     var historicalWarnings = Model.WarningHistory.Where(w => w.Timestamp <= recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
 }
+
 
 <h2>B-inspirations</h2>
 
