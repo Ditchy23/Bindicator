@@ -153,7 +153,9 @@ else
     <script>
         Chart.register(window['chartjs-plugin-annotation']);
 
-        const initialLabels = @Html.Raw(Json.Serialize(labels));
+        const sensorLabels = @Html.Raw(Json.Serialize(sensorLabels));
+        const environmentLabels = @Html.Raw(Json.Serialize(environmentLabels));
+
         const initialFillLevels = @Html.Raw(Json.Serialize(fillLevels));
         const initialWeights = @Html.Raw(Json.Serialize(weights));
         const initialDensities = @Html.Raw(Json.Serialize(densities));
