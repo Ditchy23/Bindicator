@@ -211,13 +211,13 @@ else
 
         // Updating charts when new data arrives
         function updateCharts(data) {
-            const updatedSensorLabels = data.readings
-                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-                .map(r => new Date(r.timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }));
+                    const sensorLabels = data.readings.map(r => new Date(r.timestamp + 'Z').toLocaleString('en-GB', {
+            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        }));
 
-            const updatedEnvironmentLabels = data.environmentReadings
-                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-                .map(e => new Date(e.timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }));
+        const environmentLabels = data.environmentReadings.map(e => new Date(e.timestamp + 'Z').toLocaleString('en-GB', {
+            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        }));
 
             charts[0].data.labels = updatedSensorLabels;
             charts[0].data.datasets[0].data = data.readings.map(r => r.fillLevel);
