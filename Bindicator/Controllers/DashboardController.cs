@@ -68,14 +68,21 @@ namespace Bindicator.Controllers
 
             return Json(new
             {
-                labels = viewModel.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList(),
-                fillLevels = viewModel.Readings.Select(r => r.FillLevel).ToList(),
-                weights = viewModel.Readings.Select(r => r.Weight).ToList(),
-                densities = viewModel.Readings.Select(r => r.Density).ToList(),
-                temperatures = viewModel.EnvironmentReadings.Select(r => r.Temperature).ToList(),
-                humidities = viewModel.EnvironmentReadings.Select(r => r.Humidity).ToList()
+                readings = viewModel.Readings.Select(r => new {
+                    timestamp = r.Timestamp,
+                    fillLevel = r.FillLevel,
+                    weight = r.Weight,
+                    density = r.Density
+                }).ToList(),
+
+                environmentReadings = viewModel.EnvironmentReadings.Select(e => new {
+                    timestamp = e.Timestamp,
+                    temperature = e.Temperature,
+                    humidity = e.Humidity
+                }).ToList()
             });
         }
+
 
 
         /// <summary>
