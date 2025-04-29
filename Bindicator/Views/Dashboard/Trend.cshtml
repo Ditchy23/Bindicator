@@ -210,32 +210,33 @@ else
         });
 
         // Updating charts when new data arrives
-        function updateCharts(data) {
-                    const sensorLabels = data.readings.map(r => new Date(r.timestamp + 'Z').toLocaleString('en-GB', {
-            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-        }));
+               function updateCharts(data) {
+            const sensorLabels = data.readings.map(r => new Date(r.timestamp + 'Z').toLocaleString('en-GB', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+            }));
 
-        const environmentLabels = data.environmentReadings.map(e => new Date(e.timestamp + 'Z').toLocaleString('en-GB', {
-            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-        }));
+            const environmentLabels = data.environmentReadings.map(e => new Date(e.timestamp + 'Z').toLocaleString('en-GB', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+            }));
 
-            charts[0].data.labels = updatedSensorLabels;
+            charts[0].data.labels = sensorLabels;
             charts[0].data.datasets[0].data = data.readings.map(r => r.fillLevel);
 
-            charts[1].data.labels = updatedSensorLabels;
+            charts[1].data.labels = sensorLabels;
             charts[1].data.datasets[0].data = data.readings.map(r => r.weight);
 
-            charts[2].data.labels = updatedSensorLabels;
+            charts[2].data.labels = sensorLabels;
             charts[2].data.datasets[0].data = data.readings.map(r => r.density);
 
-            charts[3].data.labels = updatedEnvironmentLabels;
+            charts[3].data.labels = environmentLabels;
             charts[3].data.datasets[0].data = data.environmentReadings.map(e => e.temperature);
 
-            charts[4].data.labels = updatedEnvironmentLabels;
+            charts[4].data.labels = environmentLabels;
             charts[4].data.datasets[0].data = data.environmentReadings.map(e => e.humidity);
 
             charts.forEach(chart => chart.update());
         }
+
 
         // SignalR connection
         const connection = new signalR.HubConnectionBuilder()
