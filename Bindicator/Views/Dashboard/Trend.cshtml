@@ -3,9 +3,7 @@
 @{
     ViewData["Title"] = "B-inspirations";
 
-    var sensorLabels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
-    var environmentLabels = Model.EnvironmentReadings.Select(e => e.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
-
+    var labels = Model.Readings.Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm")).ToList();
     var fillLevels = Model.Readings.Select(r => r.FillLevel).ToList();
     var weights = Model.Readings.Select(r => r.Weight).ToList();
     var densities = Model.Readings.Select(r => r.Density).ToList();
@@ -15,7 +13,6 @@
     var recentCutoff = DateTime.UtcNow.AddHours(-24);
     var recentWarnings = Model.WarningHistory.Where(w => w.Timestamp > recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
     var historicalWarnings = Model.WarningHistory.Where(w => w.Timestamp <= recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
-
 }
 
 <h2>B-inspirations</h2>
@@ -31,7 +28,6 @@
 <div id="updateStatus" class="text-info mb-3" style="display: none;">
     <i class="fas fa-sync fa-spin"></i> Updating data...
 </div>
-
 
 <div class="row">
     <div class="col-md-6 mb-4">
@@ -75,7 +71,6 @@
         </div>
     </div>
 </div>
-
 
 @if (Model.PredictedFullDate.HasValue && Model.DaysToFull.HasValue)
 {
@@ -148,7 +143,6 @@ else
     </div>
 }
 
-
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
@@ -156,26 +150,34 @@ else
     <script>
         Chart.register(window['chartjs-plugin-annotation']);
 
-        const sensorLabels = @Html.Raw(Json.Serialize(sensorLabels));
-        const environmentLabels = @Html.Raw(Json.Serialize(environmentLabels));
-
-        const chartConfigs = [
-            { id: "fillChart", labels: sensorLabels, data: @Html.Raw(Json.Serialize(fillLevels)), label: "Fill Level (%)", color: "blue" },
-            { id: "weightChart", labels: sensorLabels, data: @Html.Raw(Json.Serialize(weights)), label: "Weight (kg)", color: "red" },
-            { id: "densityChart", labels: sensorLabels, data: @Html.Raw(Json.Serialize(densities)), label: "Density", color: "green" },
-            { id: "temperatureChart", labels: environmentLabels, data: @Html.Raw(Json.Serialize(temperatures)), label: "Temperature (°C)", color: "orange" },
-            { id: "humidityChart", labels: environmentLabels, data: @Html.Raw(Json.Serialize(humidities)), label: "Humidity (%)", color: "purple" }
-        ];
+        const initialLabels = @Html.Raw(Json.Serialize(labels));
+        const initialFillLevels = @Html.Raw(Json.Serialize(fillLevels));
+        const initialWeights = @Html.Raw(Json.Serialize(weights));
+        const initialDensities = @Html.Raw(Json.Serialize(densities));
+        const initialTemperatures = @Html.Raw(Json.Serialize(temperatures));
+        const initialHumidities = @Html.Raw(Json.Serialize(humidities));
 
         const charts = [];
 
-        chartConfigs.forEach(cfg => {
+        const chartConfigs = [
+            { id: "fillChart", label: "Fill Level (%)", color: "blue", data: initialFillLevels },
+            { id: "weightChart", label: "Weight (kg)", color: "red", data: initialWeights },
+            { id: "densityChart", label: "Density", color: "green", data: initialDensities },
+            { id: "temperatureChart", label: "Temperature (°C)", color: "orange", data: initialTemperatures },
+            { id: "humidityChart", label: "Humidity (%)", color: "purple", data: initialHumidities }
+        ];
+
+        const initialSensorLabels = @Html.Raw(Json.Serialize(sensorLabels));
+        const initialEnvironmentLabels = @Html.Raw(Json.Serialize(environmentLabels));
+
+        // Create charts
+        chartConfigs.forEach((cfg, index) => {
             const ctx = document.getElementById(cfg.id)?.getContext('2d');
             if (!ctx) return;
             const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: cfg.labels,
+                    labels: (index < 3 ? initialSensorLabels : initialEnvironmentLabels),
                     datasets: [{
                         label: cfg.label,
                         data: cfg.data,
@@ -197,7 +199,34 @@ else
             charts.push(chart);
         });
 
-        // SignalR connection handling (no change needed here)
+        function updateCharts(data) {
+            const sensorLabels = data.readings.map(r => new Date(r.timestamp).toLocaleString('en-GB', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+            }));
+
+            const environmentLabels = data.environmentReadings.map(e => new Date(e.timestamp).toLocaleString('en-GB', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+            }));
+
+            charts[0].data.labels = sensorLabels;
+            charts[0].data.datasets[0].data = data.readings.map(r => r.fillLevel);
+
+            charts[1].data.labels = sensorLabels;
+            charts[1].data.datasets[0].data = data.readings.map(r => r.weight);
+
+            charts[2].data.labels = sensorLabels;
+            charts[2].data.datasets[0].data = data.readings.map(r => r.density);
+
+            charts[3].data.labels = environmentLabels;
+            charts[3].data.datasets[0].data = data.environmentReadings.map(e => e.temperature);
+
+            charts[4].data.labels = environmentLabels;
+            charts[4].data.datasets[0].data = data.environmentReadings.map(e => e.humidity);
+
+            charts.forEach(chart => chart.update());
+        }
+
+        // SignalR connection
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/binStatusHub")
             .build();
@@ -210,11 +239,8 @@ else
             if (postcode.toUpperCase() === thisPostcode &&
                 street.toUpperCase() === thisStreet &&
                 binNumber == thisBinNumber) {
-
                 const updateStatus = document.getElementById('updateStatus');
                 updateStatus.style.display = 'block';
-                updateStatus.style.opacity = '1';
-                updateStatus.style.transition = 'none';
 
                 fetch(`/Dashboard/GetLatestTrendData?postcode=${postcode}&street=${street}&binNumber=${binNumber}`)
                     .then(response => response.json())
@@ -224,7 +250,6 @@ else
                     .catch(error => console.error('Error fetching trend data:', error))
                     .finally(() => {
                         setTimeout(() => {
-                            updateStatus.style.transition = 'opacity 0.5s ease-out';
                             updateStatus.style.opacity = '0';
                             setTimeout(() => {
                                 updateStatus.style.display = 'none';
@@ -237,13 +262,5 @@ else
         connection.start().catch(function (err) {
             return console.error(err.toString());
         });
-
-        function updateCharts(data) {
-            charts.forEach((chart, idx) => {
-                chart.data.datasets[0].data = data.datasets[idx].data;
-                chart.data.labels = data.datasets[idx].labels;
-                chart.update();
-            });
-        }
     </script>
 }
