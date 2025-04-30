@@ -4,12 +4,12 @@
     ViewData["Title"] = "B-inspirations";
 
     var sensorLabels = Model.Readings
-        .OrderBy(r => r.Timestamp) // ✅ Ensure correct order
+        .OrderBy(r => r.Timestamp)
         .Select(r => r.Timestamp.ToLocalTime().ToString("dd MMM HH:mm"))
         .ToList();
 
     var environmentLabels = Model.EnvironmentReadings
-        .OrderBy(e => e.Timestamp) // ✅ Ensure correct order
+        .OrderBy(e => e.Timestamp)
         .Select(e => e.Timestamp.ToLocalTime().ToString("dd MMM HH:mm"))
         .ToList();
 
@@ -23,8 +23,6 @@
     var recentWarnings = Model.WarningHistory.Where(w => w.Timestamp > recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
     var historicalWarnings = Model.WarningHistory.Where(w => w.Timestamp <= recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
 }
-
-
 
 <h2>B-inspirations</h2>
 
