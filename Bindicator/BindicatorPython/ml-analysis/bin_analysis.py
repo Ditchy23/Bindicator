@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 import json
 
 # Load CSV data
-INPUT_CSV = "C:/Users/Ditchy/source/repos/BindicatorPython/ml-analysis/analysis_data.csv"
+INPUT_CSV = "C:/Users/buter/Documents/analysis_data.csv"
 df_hist = pd.read_csv(INPUT_CSV, parse_dates=['Timestamp'])
 
 # Configuration
@@ -14,49 +14,55 @@ MAX_FILL = 100
 
 results = []
 
+NEAR_FULL_THRESHOLD = 85  # percent considered "near full"
+
 for bin_id, group in df_hist.groupby('BinNumber'):
     group = group.sort_values('Timestamp')
     group['days'] = (group['Timestamp'] - group['Timestamp'].min()).dt.days
+    group['date'] = group['Timestamp'].dt.date  # Extract just the date
 
     if len(group['days'].unique()) < 2:
-        continue
+        continue  # Not enough data for a meaningful trend
 
     X = group[['days']].values
-    y_weight = group['Weight'].values
     y_fill = group['FillLevel'].values
 
-    weight_model = LinearRegression().fit(X, y_weight)
+    # Train regression model
     fill_model = LinearRegression().fit(X, y_fill)
+    predicted_fill = fill_model.predict(X)
+    predicted_fill_pct = (predicted_fill / MAX_FILL) * 100
 
-    current_weight = y_weight[-1]
-    current_fill = y_fill[-1]
+    # Combine predictions with dates
+    group['predicted_fill_pct'] = predicted_fill_pct
 
-    weight_rate = weight_model.coef_[0]
-    fill_rate = fill_model.coef_[0]
+    # Aggregate by date (average predicted fill per day)
+    daily_fill = group.groupby('date')['predicted_fill_pct'].mean()
 
-    days_to_full_weight = (MAX_WEIGHT - current_weight) / weight_rate if weight_rate > 0 else None
-    days_to_full_fill = (MAX_FILL - current_fill) / fill_rate if fill_rate > 0 else None
-    avg_days_to_full = np.mean([v for v in [days_to_full_weight, days_to_full_fill] if v is not None])
+    # Count days "near full"
+    total_days = len(daily_fill)
+    near_full_days = (daily_fill >= NEAR_FULL_THRESHOLD).sum()
+    avg_fill_pct = daily_fill.mean()
 
-    if avg_days_to_full < 3:
-        recommendation = "⚠️ Bin fills very quickly – suggest larger bin or more frequent collection."
-    elif weight_rate < 0.2 and fill_rate < 0.3:
-        recommendation = "🟢 Bin fills slowly – consider reducing collection frequency."
+    # Construct recommendation
+    usage_statement = f"Bin has been near full for {near_full_days} out of {total_days} days monitored."
+    if near_full_days / total_days >= 0.5:
+        action = "⚠️ Consider a larger bin or more frequent collection."
+    elif near_full_days == 0 and avg_fill_pct < 30:
+        action = "ℹ️ Consider a smaller bin – current one is underused."
     else:
-        recommendation = "✅ Bin fill rate is within expected range."
+        action = "✅ Current bin size is appropriate."
 
     result = {
         "bin_id": bin_id,
-        "current_weight": round(current_weight, 2),
-        "current_fill": round(current_fill, 2),
-        "weight_rate_per_day": round(weight_rate, 2),
-        "fill_rate_per_day": round(fill_rate, 2),
-        "days_to_full_weight": round(days_to_full_weight, 1) if days_to_full_weight else None,
-        "days_to_full_fill": round(days_to_full_fill, 1) if days_to_full_fill else None,
-        "recommendation": recommendation
+        "average_fill_percent": round(avg_fill_pct, 2),
+        "near_full_days": int(near_full_days),
+        "total_days_monitored": int(total_days),
+        "recommendation": f"{usage_statement} {action}"
     }
 
     results.append(result)
+
+
 
 # Output as JSON
 json_output = json.dumps(results, indent=4)
