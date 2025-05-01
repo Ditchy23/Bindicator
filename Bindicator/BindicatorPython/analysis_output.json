@@ -1,0 +1,52 @@
+[
+    {
+        "bin_id": 1,
+        "current_weight": 2.63,
+        "current_fill": 8.08,
+        "weight_rate_per_day": 0.05,
+        "fill_rate_per_day": -0.32,
+        "days_to_full_weight": 412.6,
+        "days_to_full_fill": null,
+        "recommendation": "\ud83d\udfe2 Bin fills slowly \u2013 consider reducing collection frequency."
+    },
+    {
+        "bin_id": 2,
+        "current_weight": 5.45,
+        "current_fill": 11.3,
+        "weight_rate_per_day": 0.02,
+        "fill_rate_per_day": -0.01,
+        "days_to_full_weight": 897.3,
+        "days_to_full_fill": null,
+        "recommendation": "\ud83d\udfe2 Bin fills slowly \u2013 consider reducing collection frequency."
+    },
+    {
+        "bin_id": 3,
+        "current_weight": 4.25,
+        "current_fill": 13.48,
+        "weight_rate_per_day": 0.09,
+        "fill_rate_per_day": -0.63,
+        "days_to_full_weight": 241.8,
+        "days_to_full_fill": null,
+        "recommendation": "\ud83d\udfe2 Bin fills slowly \u2013 consider reducing collection frequency."
+    },
+    {
+        "bin_id": 4,
+        "current_weight": 5.83,
+        "current_fill": 9.38,
+        "weight_rate_per_day": 0.33,
+        "fill_rate_per_day": -0.13,
+        "days_to_full_weight": 58.9,
+        "days_to_full_fill": null,
+        "recommendation": "\u2705 Bin fill rate is within expected range."
+    },
+    {
+        "bin_id": 5,
+        "current_weight": 3.82,
+        "current_fill": 6.78,
+        "weight_rate_per_day": 0.16,
+        "fill_rate_per_day": -0.5,
+        "days_to_full_weight": 134.0,
+        "days_to_full_fill": null,
+        "recommendation": "\ud83d\udfe2 Bin fills slowly \u2013 consider reducing collection frequency."
+    }
+]
