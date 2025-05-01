@@ -11,6 +11,7 @@
 <p class="lead">Click on the markers to see more details about each bin.</p>
 <p>By default only bins ready to be included in the collections are displayed.</p>
 <p>If you want to see the location of all bins use the toggle under the map. These bins are not routed.</p>
+
 <!-- First Collection Information -->
 <div class="card mb-3">
     <div class="card-header">
@@ -25,6 +26,7 @@
         <div class="mb-2">
             <button id="routeBtn" class="btn btn-primary ms-2">Calculate route</button>
         </div>
+
         <!-- Toggle checkbox for First Collection Route -->
         <div class="form-check">
             <input class="form-check-input" type="checkbox" id="toggleRouteFirst" disabled />
@@ -95,6 +97,7 @@
         <div class="mb-2">
             <button id="routeBtn2" class="btn btn-primary ms-2">Calculate route</button>
         </div>
+
         <!-- Toggle checkbox for Second Collection Route -->
         <div class="form-check">
             <input class="form-check-input" type="checkbox" id="toggleRouteSecond" disabled />
@@ -151,9 +154,10 @@
 
 <hr class="my-4">
 
+<!--Map Area -->
 <div id="map" style="height: 500px; width: 100%;"></div>
 
-<!-- Toggle for All Bins -->
+<!-- Toggle for Displaying all bins -->
 <div class="form-check my-3">
     <input class="form-check-input" type="checkbox" id="toggleAllBins" />
     <label class="form-check-label" for="toggleAllBins">
@@ -220,6 +224,7 @@
                         bounds[1][1] = Math.max(bounds[1][1], bin.latitude);
                     }
 
+                    // Create a popup for the marker
                     const popupContent = document.createElement('div');
                     popupContent.innerHTML = `
                         <strong>Bin #${bin.binNumber}</strong><br/>
@@ -359,6 +364,3 @@
         });
     });
 </script>
-
-
-

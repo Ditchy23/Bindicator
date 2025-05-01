@@ -28,16 +28,19 @@ namespace Bindicator.Services
         /// The task result contains a list of the latest <see cref="BinStatusViewModel"/> objects.</returns>  
         public async Task<List<BinStatusViewModel>> GetLatestBinStatusesAsync()
         {
+            // Fetch the latest sensor data grouped by location and bin number
             var latestSensorData = await _context.SensorReadings
                 .GroupBy(b => new { b.Postcode, b.Street, b.BinNumber })
                 .Select(g => g.OrderByDescending(r => r.Timestamp).First())
                 .ToListAsync();
 
+            // Fetch the latest environment data grouped by location and bin number
             var latestEnvData = await _context.EnvironmentReadings
                 .GroupBy(e => new { e.Postcode, e.Street, e.BinNumber })
                 .Select(g => g.OrderByDescending(e => e.Timestamp).First())
                 .ToListAsync();
 
+            // Combine sensor and environment data into view models
             var viewModels = from sensor in latestSensorData
                              join env in latestEnvData
                              on new { sensor.Postcode, sensor.Street, sensor.BinNumber }

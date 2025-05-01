@@ -9,7 +9,10 @@ namespace Bindicator.Helpers
         /// Calculates the predicted date when the bin will be full based on the recent trend of fill levels.
         /// </summary>
         /// <param name="readings">The list of sensor readings.</param>
-        /// <param name="model">The view model containing bin details (either <see cref="SensorDataViewModel"/> or <see cref="BinTrendViewModel"/>).</param>
+        /// <param name="model">
+        /// The view model containing bin details. This can be either:
+        /// <see cref="SensorDataViewModel"/> or <see cref="BinTrendViewModel"/>.
+        /// </param>
         public static void CalculatePredictedFullDate(List<SensorData> readings, dynamic model)
         {
             Console.WriteLine($"Calculating predicted full date for Bin #{model.BinNumber}");

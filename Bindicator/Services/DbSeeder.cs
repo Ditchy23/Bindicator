@@ -160,6 +160,17 @@ public class DbSeeder
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Seeds the database with analysis data for sensor readings.
+    /// </summary>
+    /// <param name="context">The application's database context.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// This method generates synthetic analysis data for bins over a 28-day period.
+    /// Each bin is assigned a usage profile (light, moderate, heavy) that determines
+    /// the rate of fill growth, reset behavior, and reset cycle. The last bin is
+    /// configured to always remain nearly full for testing purposes.
+    /// </remarks>
     public static async Task SeedAnalysisDataAsync(ApplicationDbContext context)
     {
         if (await context.SensorAnalysisReadings.AnyAsync())
@@ -176,10 +187,10 @@ public class DbSeeder
         // Define usage profiles: light, moderate, heavy
         var binUsageProfiles = new[]
         {
-        new { FillGrowth = (1.0f, 2.0f), ResetFill = (3f, 8f), ResetCycle = 20 }, // Light usage
-        new { FillGrowth = (1.5f, 4.0f), ResetFill = (5f, 15f), ResetCycle = 14 }, // Moderate usage
-        new { FillGrowth = (3.0f, 6.0f), ResetFill = (10f, 20f), ResetCycle = 10 }, // Heavy usage
-    };
+            new { FillGrowth = (1.0f, 2.0f), ResetFill = (3f, 8f), ResetCycle = 20 }, // Light usage
+            new { FillGrowth = (1.5f, 4.0f), ResetFill = (5f, 15f), ResetCycle = 14 }, // Moderate usage
+            new { FillGrowth = (3.0f, 6.0f), ResetFill = (10f, 20f), ResetCycle = 10 }, // Heavy usage
+        };
 
         for (int binId = 1; binId <= binCount; binId++)
         {
@@ -239,5 +250,4 @@ public class DbSeeder
         context.SensorAnalysisReadings.AddRange(sensorAnalysisData);
         await context.SaveChangesAsync();
     }
-
 }

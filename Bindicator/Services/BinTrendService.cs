@@ -14,10 +14,21 @@ namespace Bindicator.Services
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinTrendService"/> class.
+        /// </summary>
+        /// <param name="context">The application's database context.</param>
         public BinTrendService(ApplicationDbContext context)
         {
             _context = context;
         }
+
+        /// <summary>
+        /// Generates a list of warnings based on sensor and environmental data.
+        /// </summary>
+        /// <param name="sensor">The sensor data to evaluate.</param>
+        /// <param name="env">The environmental data to evaluate.</param>
+        /// <returns>A list of warning messages.</returns>
         private List<string> GetWarnings(SensorData? sensor, EnvironmentData? env)
         {
             var warnings = new List<string>();
@@ -43,7 +54,7 @@ namespace Bindicator.Services
             return warnings;
         }
 
-        ///<summary>
+        /// <summary>
         /// Retrieves the trend data for a specific bin, including sensor readings, environment readings, and warning history.
         /// </summary>
         /// <param name="postcode">The postcode of the bin's location.</param>
@@ -56,17 +67,19 @@ namespace Bindicator.Services
         /// </remarks>
         public async Task<BinTrendViewModel> GetTrendAsync(string postcode, string street, int binNumber)
         {
+            // Fetch sensor readings for the specified bin
             var readings = await _context.SensorReadings
                 .Where(b => b.Postcode == postcode && b.Street == street && b.BinNumber == binNumber)
                 .OrderBy(b => b.Timestamp)
                 .ToListAsync();
 
+            // Fetch environment readings for the specified bin
             var envReadings = await _context.EnvironmentReadings
                 .Where(e => e.Postcode == postcode && e.Street == street && e.BinNumber == binNumber)
                 .OrderBy(e => e.Timestamp)
                 .ToListAsync();
 
-            // Build warning history
+            // Build warning history based on sensor and environment readings
             var warningHistory = new List<WarningEntry>();
             foreach (var sensor in readings)
             {
@@ -82,6 +95,7 @@ namespace Bindicator.Services
                 }
             }
 
+            // Add warnings for environment readings without corresponding sensor readings
             foreach (var env in envReadings)
             {
                 if (!warningHistory.Any(w => w.Timestamp == env.Timestamp))
@@ -98,6 +112,7 @@ namespace Bindicator.Services
                 }
             }
 
+            // Create the view model with the collected data
             var viewModel = new BinTrendViewModel
             {
                 Postcode = postcode,
@@ -108,7 +123,7 @@ namespace Bindicator.Services
                 WarningHistory = warningHistory
             };
 
-            // Predicatuin helper method to calculate the predicted full date
+            // Calculate the predicted full date for the bin
             PredictionHelper.CalculatePredictedFullDate(readings, viewModel);
 
             return viewModel;

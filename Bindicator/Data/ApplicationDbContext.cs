@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Bindicator.Data
 {
     /// <summary>
-    /// Represents the application's database context.
+    /// Represents the application's database context, providing access to the database tables.
     /// </summary>
     public class ApplicationDbContext : DbContext
     {
@@ -18,15 +18,18 @@ namespace Bindicator.Data
         }
 
         /// <summary>
-        /// Gets or sets the sensor readings.
+        /// Gets or sets the database table for sensor readings.
         /// </summary>
         public DbSet<SensorData> SensorReadings { get; set; }
 
         /// <summary>
-        /// Gets or sets the environment readings.
+        /// Gets or sets the database table for environment readings.
         /// </summary>
         public DbSet<EnvironmentData> EnvironmentReadings { get; set; }
-        public DbSet<SensorAnalysisData> SensorAnalysisReadings { get; set; }
 
+        /// <summary>
+        /// Gets or sets the database table for sensor analysis data.
+        /// </summary>
+        public DbSet<SensorAnalysisData> SensorAnalysisReadings { get; set; }
     }
 }

@@ -64,5 +64,4 @@ namespace Bindicator.ViewModels
         /// </summary>
         public string Message { get; set; } = string.Empty;
     }
-
 }

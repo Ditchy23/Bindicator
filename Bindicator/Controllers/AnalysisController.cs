@@ -16,15 +16,21 @@ namespace Bindicator.Controllers
         private readonly DbSeeder _dbSeeder;
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalysisController"/> class.
+        /// </summary>
+        /// <param name="context">The application's database context.</param>
+        /// <param name="dbSeeder">The database seeder service.</param>
         public AnalysisController(ApplicationDbContext context, DbSeeder dbSeeder)
         {
             _context = context;
-            _dbSeeder = dbSeeder;   
+            _dbSeeder = dbSeeder;
         }
 
         /// <summary>
-        /// loads the analysis page.
+        /// Loads the analysis page.
         /// </summary>
+        /// <returns>The analysis page view.</returns>
         public async Task<IActionResult> Index()
         {
             await Task.CompletedTask;
@@ -32,8 +38,9 @@ namespace Bindicator.Controllers
         }
 
         /// <summary>
-        /// Seeds analysis data for ML experimentation.
+        /// Seeds analysis data for machine learning experimentation.
         /// </summary>
+        /// <returns>A redirection to the <see cref="DownloadCsv"/> action.</returns>
         [HttpPost]
         public async Task<IActionResult> SeedAnalysisData()
         {
@@ -41,6 +48,10 @@ namespace Bindicator.Controllers
             return RedirectToAction(nameof(DownloadCsv));
         }
 
+        /// <summary>
+        /// Downloads the analysis data as a CSV file.
+        /// </summary>
+        /// <returns>A CSV file containing the analysis data.</returns>
         [HttpGet]
         public async Task<IActionResult> DownloadCsv()
         {
@@ -63,6 +74,11 @@ namespace Bindicator.Controllers
             return File(csvBytes, "text/csv", "analysis_data.csv");
         }
 
+        /// <summary>
+        /// Uploads and processes a JSON file containing analysis data.
+        /// </summary>
+        /// <param name="uploadedFile">The uploaded JSON file.</param>
+        /// <returns>A redirection to the <see cref="Index"/> action or the analysis page view with the uploaded data.</returns>
         [HttpPost]
         public async Task<IActionResult> UploadAnalysisJson(IFormFile uploadedFile)
         {
@@ -77,8 +93,6 @@ namespace Bindicator.Controllers
                 using var reader = new StreamReader(uploadedFile.OpenReadStream());
                 var json = await reader.ReadToEndAsync();
 
-
-
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -86,7 +100,6 @@ namespace Bindicator.Controllers
 
                 System.Diagnostics.Debug.WriteLine("📄 Raw JSON:");
                 System.Diagnostics.Debug.WriteLine(json);
-
 
                 var results = JsonSerializer.Deserialize<List<BinAnalysisResult>>(json, options);
 
@@ -108,7 +121,6 @@ namespace Bindicator.Controllers
                 System.Diagnostics.Debug.WriteLine(ex.StackTrace);
                 return RedirectToAction("Index");
             }
-
         }
     }
 }

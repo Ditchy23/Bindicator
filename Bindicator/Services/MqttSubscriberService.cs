@@ -148,7 +148,7 @@ public class MqttSubscriberService : BackgroundService
                             var changes = await db.SaveChangesAsync(stoppingToken);
                             Console.WriteLine($"✅ DB changes saved: {changes} row(s) affected.");
 
-                            // 🔥 Always notify SignalR if anything saved
+                            // Always notify SignalR if anything saved
                             await _hubContext.Clients.All.SendAsync("ReceiveTrendUpdate", postcode, street, binNumber);
                             await _hubContext.Clients.All.SendAsync("ReceiveBinUpdate");
 

@@ -18,7 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add services for SignalR
 builder.Services.AddSignalR();
 
-// Register background service before building the app
+// Register background services
 builder.Services.AddHostedService<MqttSubscriberService>();
 builder.Services.AddScoped<BinDataService>();
 builder.Services.AddScoped<BinTrendService>();
@@ -32,7 +32,6 @@ app.MapHub<Bindicator.Hubs.BinStatusHub>("/binStatusHub");
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
