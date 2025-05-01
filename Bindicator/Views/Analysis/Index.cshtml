@@ -5,9 +5,10 @@
 
 <h2>📊 Bin analysis</h2>
 <p class="lead">This page demonstrates long term data anaylsis using machine learning.</p>
-<p class="lead">Python model script is included in source code, complile in VS code.</p>
-<p class="lead">Realistic seeded long-term data is used to train the custom model, which creates a JSON file.</p>
-<p class="lead">Upload the json file (script creates the file in "Downloads" on Windows or Linux systems) to see the results of the prediction.</p>
+<p class="lead">The Python model script is included in source code, complile in VS code or your preferred tool.</p>
+<p class="lead">Seed realistic long-term data is using the seed analysis data button. This data is downloaded as a CSV file</p>
+<p class="lead">Run the Python script, using the downloaded analysis_data.csv to train the model</p>
+<p class="lead">Upload the resulting JSON file (Python script creates the file in "Downloads" on Windows or Linux systems) to see the results of the prediction.</p>
 <form asp-action="SeedAnalysisData" method="post">
     <button type="submit" class="btn btn-warning mb-3">
         🔄 Seed analysis data
