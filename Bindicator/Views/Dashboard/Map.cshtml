@@ -15,7 +15,7 @@
 <!-- First Collection Information -->
 <div class="card mb-3">
     <div class="card-header">
-        <strong>Priority collection info</strong>
+        <h3>Priority collection info</h3>
     </div>
     <div class="card-body">
         <p><strong>Priority collection date:</strong> @ViewBag.FirstCollectionDate.ToString("f")</p>
@@ -40,11 +40,11 @@
 <!-- Accordion for Bins in First Collection -->
 <div class="accordion" id="accordionFirstCollection">
     <div class="accordion-item">
-        <h2 class="accordion-header" id="headingFirstCollection">
+        <h4 class="accordion-header" id="headingFirstCollection">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirstCollection" aria-expanded="false" aria-controls="collapseFirstCollection">
                 Bins for priority collection
             </button>
-        </h2>
+        </h4>
         <div id="collapseFirstCollection" class="accordion-collapse collapse" aria-labelledby="headingFirstCollection" data-bs-parent="#accordionFirstCollection">
             <div class="accordion-body">
                 <ul class="list-group">
@@ -86,7 +86,7 @@
 <!-- Second Collection Information -->
 <div class="card mb-3">
     <div class="card-header">
-        <strong>Non-priority collection info</strong>
+        <h3>Non-priority collection info</h3>
     </div>
     <div class="card-body">
         <p><strong>Non-priority collection date:</strong> @ViewBag.SecondCollectionDate.ToString("f")</p>
@@ -111,11 +111,11 @@
 <!-- Accordion for Bins in Second Collection -->
 <div class="accordion" id="accordionSecondCollection">
     <div class="accordion-item">
-        <h2 class="accordion-header" id="headingSecondCollection">
+        <h4 class="accordion-header" id="headingSecondCollection">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecondCollection" aria-expanded="false" aria-controls="collapseSecondCollection">
                 Bins for non-priority collection
             </button>
-        </h2>
+        </h4>
         <div id="collapseSecondCollection" class="accordion-collapse collapse" aria-labelledby="headingSecondCollection" data-bs-parent="#accordionSecondCollection">
             <div class="accordion-body">
                 <ul class="list-group">

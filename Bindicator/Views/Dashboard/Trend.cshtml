@@ -24,19 +24,18 @@
     var historicalWarnings = Model.WarningHistory.Where(w => w.Timestamp <= recentCutoff).OrderByDescending(w => w.Timestamp).ToList();
 }
 
-<h2>B-inspirations</h2>
+<h1>B-inspirations</h1>
 
 <p>
     <strong>@Model.Street @Model.BinNumber</strong> (@Model.Postcode)
 </p>
+<p class="lead">Real-time data for all bin sensors.</p>
+<p class="lead">Fullness prediction for non-full bins.</p>
+<p class="lead">Alerts for bins with issues.</p>
 
 <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary mb-3">
     <i class="fas fa-arrow-left"></i> Back to Dashboard
 </a>
-
-<div id="updateStatus" class="text-info mb-3" style="display: none;">
-    <i class="fas fa-sync fa-spin"></i> Updating data...
-</div>
 
 <div class="row">
     <div class="col-md-6 mb-4">
