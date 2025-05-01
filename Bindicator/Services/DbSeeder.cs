@@ -173,25 +173,55 @@ public class DbSeeder
 
         var sensorAnalysisData = new List<SensorAnalysisData>();
 
+        // Define usage profiles: light, moderate, heavy
+        var binUsageProfiles = new[]
+        {
+        new { FillGrowth = (1.0f, 2.0f), ResetFill = (3f, 8f), ResetCycle = 20 }, // Light usage
+        new { FillGrowth = (1.5f, 4.0f), ResetFill = (5f, 15f), ResetCycle = 14 }, // Moderate usage
+        new { FillGrowth = (3.0f, 6.0f), ResetFill = (10f, 20f), ResetCycle = 10 }, // Heavy usage
+    };
+
         for (int binId = 1; binId <= binCount; binId++)
         {
-            float fill = (float)(random.NextDouble() * 10 + 20);  // Start between 20-30
-            float weight = (float)(random.NextDouble() * 5 + 2);  // Start between 2-7
+            float fill;
+            float weight;
+
+            bool isAlwaysFull = binId == 5; // Last bin always near full
+
+            // Initialize values
+            fill = isAlwaysFull
+                ? (float)(random.NextDouble() * 10 + 85) // Start 85-95% full
+                : (float)(random.NextDouble() * 10 + 20); // Start 20-30%
+
+            weight = (float)(random.NextDouble() * 5 + 2); // Start 2-7kg
+
+            var usageProfile = isAlwaysFull
+                ? new { FillGrowth = (2.0f, 5.0f), ResetFill = (80f, 90f), ResetCycle = 100 } // Rarely resets, stays full
+                : binUsageProfiles[(binId - 1) % binUsageProfiles.Length];
 
             for (int day = 0; day <= daysBack; day++)
             {
                 var timestamp = now.AddDays(-daysBack + day);
 
-                // Reset every 14 days (simulate collection)
-                if (day != 0 && day % 14 == 0)
+                // Reset logic
+                if (!isAlwaysFull && day != 0 && day % usageProfile.ResetCycle == 0)
                 {
-                    fill = (float)(random.NextDouble() * 10 + 5);   // Reset to 5-15%
-                    weight = (float)(random.NextDouble() * 5 + 2);   // Reset to 2-7kg
+                    fill = (float)(random.NextDouble() * (usageProfile.ResetFill.Item2 - usageProfile.ResetFill.Item1) + usageProfile.ResetFill.Item1);
+                    weight = (float)(random.NextDouble() * 5 + 2); // Reset to 2-7kg
                 }
                 else
                 {
-                    fill = Math.Min(fill + (float)(random.NextDouble() * 2.5 + 1.5), 100);  // Increase 1.5–4.0
-                    weight = Math.Min(weight + (float)(random.NextDouble() * 1.5 + 0.5), 25); // Increase 0.5–2.0
+                    // Increase fill
+                    float fillIncrease = (float)(random.NextDouble() * (usageProfile.FillGrowth.Item2 - usageProfile.FillGrowth.Item1) + usageProfile.FillGrowth.Item1);
+                    fill = Math.Min(fill + fillIncrease, 100);
+
+                    // Add some random sensor noise
+                    fill += (float)(random.NextDouble() * 2 - 1);     // +/- 1%
+                    weight += (float)(random.NextDouble() * 0.5 - 0.25); // +/- 0.25kg
+
+                    // Prevent overflow
+                    fill = Math.Min(fill, 100);
+                    weight = Math.Min(weight, 25);
                 }
 
                 sensorAnalysisData.Add(new SensorAnalysisData
@@ -209,4 +239,5 @@ public class DbSeeder
         context.SensorAnalysisReadings.AddRange(sensorAnalysisData);
         await context.SaveChangesAsync();
     }
+
 }

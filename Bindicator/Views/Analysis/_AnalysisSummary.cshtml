@@ -9,12 +9,6 @@
                 <strong>Bin #@bin.BinId</strong>
                 <span class="badge bg-secondary">ID: @bin.BinId</span>
             </div>
-            <small class="text-muted">
-                Weight: @Math.Round(bin.CurrentWeight, 2) kg<br />
-                Fill Level: @Math.Round(bin.CurrentFill, 2)%<br />
-                Est. days to full (Weight): @(bin.DaysToFullWeight.HasValue ? Math.Round(bin.DaysToFullWeight.Value, 1) : "N/A")<br />
-                Est. days to full (Fill): @(bin.DaysToFullFill.HasValue ? Math.Round(bin.DaysToFullFill.Value, 1) : "N/A")
-            </small>
             <div class="mt-2">
                 @if (bin.Recommendation.Contains("⚠️"))
                 {
@@ -27,7 +21,7 @@
                 else
                 {
                     <span class="badge bg-info text-dark">@bin.Recommendation</span>
-                }
+                } 
             </div>
         </li>
     }

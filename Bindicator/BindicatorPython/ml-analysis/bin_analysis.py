@@ -4,8 +4,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import json
 
-# Load CSV data
-INPUT_CSV = "C:/Users/buter/Documents/analysis_data.csv"
+# Load CSV data, amend path to match analysis_data.csv location
+INPUT_CSV = "C:/Users/c2932952/Downloads/analysis_data.csv"
 df_hist = pd.read_csv(INPUT_CSV, parse_dates=['Timestamp'])
 
 # Configuration
