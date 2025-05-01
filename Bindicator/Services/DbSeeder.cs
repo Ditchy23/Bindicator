@@ -159,4 +159,54 @@ public class DbSeeder
         context.EnvironmentReadings.AddRange(environmentData);
         await context.SaveChangesAsync();
     }
+
+    public static async Task SeedAnalysisDataAsync(ApplicationDbContext context)
+    {
+        if (await context.SensorAnalysisReadings.AnyAsync())
+            return;
+
+        var now = DateTime.UtcNow;
+        var random = new Random(1234);
+
+        int daysBack = 28;
+        int binCount = 5;
+
+        var sensorAnalysisData = new List<SensorAnalysisData>();
+
+        for (int binId = 1; binId <= binCount; binId++)
+        {
+            float fill = (float)(random.NextDouble() * 10 + 20);  // Start between 20-30
+            float weight = (float)(random.NextDouble() * 5 + 2);  // Start between 2-7
+
+            for (int day = 0; day <= daysBack; day++)
+            {
+                var timestamp = now.AddDays(-daysBack + day);
+
+                // Reset every 14 days (simulate collection)
+                if (day != 0 && day % 14 == 0)
+                {
+                    fill = (float)(random.NextDouble() * 10 + 5);   // Reset to 5-15%
+                    weight = (float)(random.NextDouble() * 5 + 2);   // Reset to 2-7kg
+                }
+                else
+                {
+                    fill = Math.Min(fill + (float)(random.NextDouble() * 2.5 + 1.5), 100);  // Increase 1.5–4.0
+                    weight = Math.Min(weight + (float)(random.NextDouble() * 1.5 + 0.5), 25); // Increase 0.5–2.0
+                }
+
+                sensorAnalysisData.Add(new SensorAnalysisData
+                {
+                    Postcode = "TS18",
+                    Street = $"Test Street {binId}",
+                    BinNumber = binId,
+                    FillLevel = (float)Math.Round(fill, 2),
+                    Weight = (float)Math.Round(weight, 2),
+                    Timestamp = timestamp
+                });
+            }
+        }
+
+        context.SensorAnalysisReadings.AddRange(sensorAnalysisData);
+        await context.SaveChangesAsync();
+    }
 }

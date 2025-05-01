@@ -26,5 +26,7 @@ namespace Bindicator.Data
         /// Gets or sets the environment readings.
         /// </summary>
         public DbSet<EnvironmentData> EnvironmentReadings { get; set; }
+        public DbSet<SensorAnalysisData> SensorAnalysisReadings { get; set; }
+
     }
 }

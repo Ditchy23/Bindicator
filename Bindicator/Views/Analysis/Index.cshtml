@@ -1,0 +1,30 @@
+﻿@model List<Bindicator.ViewModels.BinAnalysisResult>
+@{
+    ViewData["Title"] = "Analysis";
+}
+
+<h2>📊 Bin Analysis</h2>
+
+<form asp-action="SeedAnalysisData" method="post">
+    <button type="submit" class="btn btn-warning mb-3">
+        🔄 Seed Analysis Data
+    </button>
+</form>
+
+<form asp-action="UploadAnalysisJson" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="uploadedFile" class="form-label">Upload Analysis JSON</label>
+        <input type="file" class="form-control" id="uploadedFile" name="uploadedFile" required />
+    </div>
+    <button type="submit" class="btn btn-primary">📥 Upload Analysis</button>
+</form>
+
+@if (TempData["UploadError"] != null)
+{
+    <div class="alert alert-danger">@TempData["UploadError"]</div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <partial name="_AnalysisSummary" model="Model" />
+}
