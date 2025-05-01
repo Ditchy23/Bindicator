@@ -3,20 +3,22 @@
     ViewData["Title"] = "Analysis";
 }
 
-<h2>📊 Bin Analysis</h2>
-
+<h2>📊 Bin analysis</h2>
+<p class="lead">This page demonstrates long term data anaylsis using machine learning.</p>
+<p class="lead">Realistic seeded long-term data is used to train the custom model, which creates a JSON file.</p>
+<p class="lead">Upload the json file (downloaded to "Downloads" on Windows or Linux systems) to see the results of the prediction.</p>
 <form asp-action="SeedAnalysisData" method="post">
     <button type="submit" class="btn btn-warning mb-3">
-        🔄 Seed Analysis Data
+        🔄 Seed analysis data
     </button>
 </form>
 
 <form asp-action="UploadAnalysisJson" method="post" enctype="multipart/form-data">
     <div class="mb-3">
-        <label for="uploadedFile" class="form-label">Upload Analysis JSON</label>
+        <label for="uploadedFile" class="form-label">Upload analysis JSON</label>
         <input type="file" class="form-control" id="uploadedFile" name="uploadedFile" required />
     </div>
-    <button type="submit" class="btn btn-primary">📥 Upload Analysis</button>
+    <button type="submit" class="btn btn-primary">📥 Upload analysis</button>
 </form>
 
 @if (TempData["UploadError"] != null)
