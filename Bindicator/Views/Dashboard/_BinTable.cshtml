@@ -1,4 +1,5 @@
-﻿@model List<Bindicator.ViewModels.BinStatusViewModel>
+﻿@using Bindicator.Helpers
+@model List<Bindicator.ViewModels.BinStatusViewModel>
 
 @foreach (var bin in Model)
 {
@@ -23,7 +24,7 @@
             @bin.Timestamp.ToLocalTime().ToString("g")
             <br />
             <small class="text-muted">
-                (@((DateTime.UtcNow - bin.Timestamp).TotalMinutes.ToString("N0")) mins ago)
+                (@bin.Timestamp.ToNaturalTime())
             </small>
         </td>
         <td>
