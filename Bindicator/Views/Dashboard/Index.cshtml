@@ -53,6 +53,7 @@
     <script>
         let isFiltering = false;
 
+        // Function to sort the table by column
         function applyFilter() {
             const filter = document.getElementById('binFilter').value.toLowerCase();
             document.querySelectorAll("#binTableBody tr").forEach(function (row) {
@@ -61,11 +62,12 @@
             });
         }
 
+        // Event listeners for the filter input
         document.getElementById('binFilter').addEventListener('focus', () => isFiltering = true);
         document.getElementById('binFilter').addEventListener('blur', () => isFiltering = false);
         document.getElementById('binFilter').addEventListener('keyup', applyFilter);
 
-            // Connect to the SignalR hub
+        // Connect to the SignalR hub
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/binStatusHub")
             .build();
@@ -84,17 +86,5 @@
         connection.start().catch(function (err) {
             return console.error(err.toString());
         });
-
-        // Commented out for SignalR integration
-        // setInterval(() => {
-        //     if (!isFiltering) {
-        //         fetch('/Dashboard/GetLatestBins')
-        //             .then(res => res.text())
-        //             .then(html => {
-        //                 document.getElementById('binTableBody').innerHTML = html;
-        //                 applyFilter(); // Re-apply filtering after update
-        //             });
-        //     }
-        // }, 15000);
     </script>
 }

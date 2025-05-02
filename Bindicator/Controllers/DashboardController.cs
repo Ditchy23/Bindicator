@@ -188,5 +188,16 @@ namespace Bindicator.Controllers
                 return View("NoData");
             }
         }
+
+        /// <summary>
+        /// Seeds the database with initial data.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> SeedData()
+        {
+            await DbSeeder.SeedAsync(_context);
+            return RedirectToAction("Index");
+        }
     }
 }

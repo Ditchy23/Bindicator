@@ -250,4 +250,5 @@ public class DbSeeder
         context.SensorAnalysisReadings.AddRange(sensorAnalysisData);
         await context.SaveChangesAsync();
     }
+
 }
