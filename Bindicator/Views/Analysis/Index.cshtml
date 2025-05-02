@@ -4,24 +4,25 @@
 }
 
 <h2>📊 Bin analysis</h2>
-<p class="lead">This page demonstrates long-term data analysis using machine learning.</p>
-<p class="lead">The Python model script is included in source code, complile the script in VS code or your preferred tool.</p>
-<p class="lead">Seed realistic long-term data is using the seed analysis data button. This data is downloaded as a CSV file</p>
-<p class="lead">Run the Python script, using the downloaded analysis_data.csv to train the model</p>
-<p class="lead">Upload the resulting JSON file (Python script creates the file in "Downloads" on Windows or Linux systems) to see the results of the prediction.</p>
+<p class="lead">Demonstration of long-term data analysis using machine learning.</p>
+<p class="lead">The Python model script is included in the source code, complile the script in VS code or your preferred tool.</p>
+<p class="lead">Seed realistic long-term bin data using the seed analysis data button. This data is downloaded as a CSV file.</p>
+<p class="lead">Run the Python script, using the downloaded analysis_data.csv to train the predictive model.</p>
+<p class="lead">Upload the resulting JSON file (Python script creates the file in "Downloads" on Windows or Linux systems) to see the analysis.</p>
 <form asp-action="SeedAnalysisData" method="post">
     <button type="submit" class="btn btn-warning mb-3">
         🔄 Seed analysis data
     </button>
 </form>
 
-<form asp-action="UploadAnalysisJson" method="post" enctype="multipart/form-data">
+<form asp-action="UploadAnalysisJson" method="post" enctype="multipart/form-data" class="p-4 border border-secondary-subtle rounded bg-light shadow-sm">
     <div class="mb-3">
         <label for="uploadedFile" class="form-label">Upload analysis JSON</label>
         <input type="file" class="form-control" id="uploadedFile" name="uploadedFile" required />
     </div>
     <button type="submit" class="btn btn-primary">📥 Upload analysis</button>
 </form>
+
 
 @if (TempData["UploadError"] != null)
 {

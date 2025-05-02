@@ -17,13 +17,18 @@
 </style>
 
 <h2>Bin dashboard</h2>
-<p class="lead">The dashboard shows data for all bins.</p>
-<p class="lead">Bins in green rows are nearly empty, bins in yellow rows are around half-way full, bin in red rows are almost-full or full.</p>
-<p class="lead">Transmitting live sensor data is displayed in real-time.</p>
+<p>Table row colours:</p>
 <ul>
-    <li>Filter the table by street or postcode.</li>
+    <li>Green: Bin empty or almost empty</li>
+    <li>Yellow: Bin around half-full</li>
+    <li>Red: Bin full or almost full</li>
+</ul>
+<p class="lead">The dashboard shows data for all bins.</p>
+<p class="lead">Live sensor data is displayed real-time.</p>
+<ul>
+    <li>Search the table by street or postcode.</li>
     <li>Click on a table column header to sort the table.</li>
-    <li>Click on a bin's view trend link the view real-time and historical sensor data.</li>
+    <li>Click on a bin view trend link to see real-time and recorded sensor data and warnings.</li>
 </ul>
 
 <input type="text" id="binFilter" class="form-control mb-3" placeholder="Search by street or postcode" />
