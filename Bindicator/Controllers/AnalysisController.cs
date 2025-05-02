@@ -82,9 +82,24 @@ namespace Bindicator.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadAnalysisJson(IFormFile uploadedFile)
         {
+            const long MaxFileSizeBytes = 1 * 1024 * 1024;
+
             if (uploadedFile == null || uploadedFile.Length == 0)
             {
                 TempData["UploadError"] = "No file selected.";
+                return RedirectToAction("Index");
+            }
+
+            if (uploadedFile.Length > MaxFileSizeBytes)
+            {
+                TempData["UploadError"] = "File is too large. Max size is 1MB.";
+                return RedirectToAction("Index");
+            }
+
+            if (!uploadedFile.ContentType.Equals("application/json", StringComparison.OrdinalIgnoreCase) &&
+                !uploadedFile.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["UploadError"] = "Only .json files are allowed.";
                 return RedirectToAction("Index");
             }
 
@@ -95,7 +110,8 @@ namespace Bindicator.Controllers
 
                 var options = new JsonSerializerOptions
                 {
-                    PropertyNameCaseInsensitive = true
+                    PropertyNameCaseInsensitive = true,
+                    MaxDepth = 32
                 };
 
                 System.Diagnostics.Debug.WriteLine("📄 Raw JSON:");
@@ -106,19 +122,22 @@ namespace Bindicator.Controllers
                 if (results == null)
                 {
                     TempData["UploadError"] = "Failed to parse uploaded JSON.";
-                    System.Diagnostics.Debug.WriteLine("❌ Deserialization returned null.");
                     return RedirectToAction("Index");
                 }
 
                 TempData["UploadSuccess"] = $"Successfully loaded {results.Count} results.";
                 return View("Index", model: results);
             }
+            catch (JsonException jsonEx)
+            {
+                TempData["UploadError"] = "❌ Invalid JSON format.";
+                System.Diagnostics.Debug.WriteLine(jsonEx);
+                return RedirectToAction("Index");
+            }
             catch (Exception ex)
             {
-                TempData["UploadError"] = "❌ Failed to parse uploaded JSON.";
-                System.Diagnostics.Debug.WriteLine("❌ Exception during JSON deserialization:");
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+                TempData["UploadError"] = "❌ Unexpected error while processing the file.";
+                System.Diagnostics.Debug.WriteLine(ex);
                 return RedirectToAction("Index");
             }
         }

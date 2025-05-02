@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Bindicator.Data;
 using Bindicator.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,12 @@ builder.Services.AddHostedService<MqttSubscriberService>();
 builder.Services.AddScoped<BinDataService>();
 builder.Services.AddScoped<BinTrendService>();
 builder.Services.AddScoped<DbSeeder>();
+
+// Limit the size of the form data to 1MB
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 1 * 1024 * 1024;
+});
 
 var app = builder.Build();
 
