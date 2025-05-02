@@ -8,6 +8,11 @@ using System.Collections.Generic;
 /// </summary>
 public class DbSeeder
 {
+    /// <summary>
+    /// Seeds the database with sensor and environment data.
+    /// </summary>
+    /// <param name="context">The application's database context.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
@@ -17,21 +22,21 @@ public class DbSeeder
 
         var now = DateTime.UtcNow;
 
-        // Center coordinates for each postcode
+        // Coordinates for postcodes
         var postcodeCoords = new Dictionary<string, (double Lat, double Lon)>
-           {
-               { "TS16", (54.525079, -1.3649298) },
-               { "TS17", (54.5313629, -1.2914754) },
-               { "TS18", (54.5529822, -1.3193432) }
-           };
+        {
+            { "TS16", (54.525079, -1.3649298) },
+            { "TS17", (54.5313629, -1.2914754) },
+            { "TS18", (54.5529822, -1.3193432) }
+        };
 
-        // Streets for each postcode
+        // Street names for each postcode
         var streetNames = new Dictionary<string, string[]>
-           {
-               { "TS16", new[] { "Formby Walk", "Alder Crescent", "Beech Road", "Maple Avenue", "Sycamore Street", "Poplar Drive", "Willow Close", "Hawthorn Way", "Elm Court", "Rowan View" } },
-               { "TS17", new[] { "Oakwood Drive", "Birch Lane", "Hazel Grove", "Chestnut Place", "Spruce Gardens", "Ash Terrace", "Cedar Lane", "Pine Avenue", "Lime Crescent", "Fir Walk" } },
-               { "TS18", new[] { "Cedar Avenue", "Holly Drive", "Ivy Road", "Juniper Close", "Laurel Street", "Magnolia Place", "Olive Court", "Palm Avenue", "Quince Grove", "Sycamore Walk" } }
-           }; 
+        {
+            { "TS16", new[] { "Formby Walk", "Alder Crescent", "Beech Road", "Maple Avenue", "Sycamore Street", "Poplar Drive", "Willow Close", "Hawthorn Way", "Elm Court", "Rowan View" } },
+            { "TS17", new[] { "Oakwood Drive", "Birch Lane", "Hazel Grove", "Chestnut Place", "Spruce Gardens", "Ash Terrace", "Cedar Lane", "Pine Avenue", "Lime Crescent", "Fir Walk" } },
+            { "TS18", new[] { "Cedar Avenue", "Holly Drive", "Ivy Road", "Juniper Close", "Laurel Street", "Magnolia Place", "Olive Court", "Palm Avenue", "Quince Grove", "Sycamore Walk" } }
+        };
 
         var random = new Random(1234);
         var sensorData = new List<SensorData>();
@@ -52,7 +57,6 @@ public class DbSeeder
                 double binLat = centerLat + latOffset;
                 double binLon = centerLon + lonOffset;
 
-                // Postcode group offset, but each bin in group can have a different day offset
                 int groupOffset = postcode switch
                 {
                     "TS16" => 0,
@@ -61,47 +65,41 @@ public class DbSeeder
                     _ => 0
                 };
 
-                // Each bin can have its own offset within the group to stagger collection
                 int binOffset = (binIdx % 4);
 
-                float fill = random.Next(10, 30);
-                float weight = random.Next(4, 10);
+                float fill = (float)Math.Round((double)random.Next(10, 30), 2);
+                float weight = (float)Math.Round((double)random.Next(4, 10), 2);
 
-                // Ensure we have at least 3 recent readings with an increase in weight for prediction
                 for (int day = 27; day >= 0; day--)
                 {
                     var timestamp = now.AddDays(-day);
-
                     int daysSinceFirst = 27 - day;
 
-                    // "Collection" every 14 days + bin offset to stagger empties in group
                     bool isCollectionDay = ((daysSinceFirst - groupOffset - binOffset) % 14 == 0);
 
                     if (isCollectionDay && daysSinceFirst > 0)
                     {
-                        // Emptied bins don't always go back to nearly zero—simulate variable empties!
-                        fill = random.Next(5, 18);
-                        weight = random.Next(2, 7);
+                        fill = (float)Math.Round((double)random.Next(5, 18), 2);
+                        weight = (float)Math.Round((double)random.Next(2, 7), 2);
                     }
                     else
                     {
-                        // Ensure weight and fill increase steadily for the last 3 readings
-                        if (daysSinceFirst >= 24) // Ensure the last 3 readings increase
+                        if (daysSinceFirst >= 24)
                         {
-                            fill = Math.Min(fill + (float)(random.NextDouble() * 7.5 + 2.5), 100);
-                            weight = Math.Min(weight + (float)(random.NextDouble() * 2 + 0.8), 25);
+                            fill = (float)Math.Round((double)Math.Min(fill + (float)(random.NextDouble() * 7.5 + 2.5), 100), 2);
+                            weight = (float)Math.Round((double)Math.Min(weight + (float)(random.NextDouble() * 2 + 0.8), 25), 2);
                         }
                         else
                         {
-                            fill = Math.Min(fill + (float)(random.NextDouble() * 3 + 1), 100); // Steady increase for earlier days
-                            weight = Math.Min(weight + (float)(random.NextDouble() * 1.5 + 0.5), 25); // Steady increase for earlier days
+                            fill = (float)Math.Round((double)Math.Min(fill + (float)(random.NextDouble() * 3 + 1), 100), 2);
+                            weight = (float)Math.Round((double)Math.Min(weight + (float)(random.NextDouble() * 1.5 + 0.5), 25), 2);
                         }
                     }
 
-                    float density = (float)Math.Round(random.NextDouble() * 1.2 + 0.7, 2);
+                    float density = (float)Math.Round((double)(random.NextDouble() * 1.2 + 0.7), 2);
 
                     if (random.NextDouble() < 0.07)
-                        fill = random.Next(85, 100);
+                        fill = (float)Math.Round((double)random.Next(85, 100), 2);
 
                     sensorData.Add(new SensorData
                     {
@@ -116,28 +114,28 @@ public class DbSeeder
                         Longitude = binLon
                     });
 
-                    // Environment data
-                    float temp = (float)(random.NextDouble() * 30 - 5);
-                    float humidity = (float)(random.NextDouble() * 70 + 20);
-                    float lowTemp = temp - (float)(random.NextDouble() * 3);
-                    float highTemp = temp + (float)(random.NextDouble() * 5);
+                    float temp = (float)Math.Round((double)(random.NextDouble() * 30 - 5), 2);
+                    float humidity = (float)Math.Round((double)(random.NextDouble() * 70 + 20), 2);
+                    float lowTemp = (float)Math.Round((double)(temp - (float)(random.NextDouble() * 3)), 2);
+                    float highTemp = (float)Math.Round((double)(temp + (float)(random.NextDouble() * 5)), 2);
 
-                    // Occasionally force "warning" values for demo
                     if (random.NextDouble() < 0.10)
                     {
-                        temp = 42; humidity = 18;
+                        temp = 42f;
+                        humidity = 18f;
                     }
                     if (random.NextDouble() < 0.10)
                     {
-                        temp = 25; humidity = 78;
+                        temp = 25f;
+                        humidity = 78f;
                     }
                     if (random.NextDouble() < 0.05)
                     {
-                        temp = -2;
+                        temp = -2f;
                     }
                     if (random.NextDouble() < 0.08)
                     {
-                        humidity = 92;
+                        humidity = 92f;
                     }
 
                     environmentData.Add(new EnvironmentData
@@ -145,10 +143,10 @@ public class DbSeeder
                         Postcode = postcode,
                         Street = street,
                         BinNumber = binNumber,
-                        Temperature = temp,
-                        Humidity = humidity,
-                        LowTemp = lowTemp,
-                        HighTemp = highTemp,
+                        Temperature = (float)Math.Round((double)temp, 2),
+                        Humidity = (float)Math.Round((double)humidity, 2),
+                        LowTemp = (float)Math.Round((double)lowTemp, 2),
+                        HighTemp = (float)Math.Round((double)highTemp, 2),
                         Timestamp = timestamp
                     });
                 }
@@ -199,7 +197,7 @@ public class DbSeeder
 
             bool isAlwaysFull = binId == 5; // Last bin always near full
 
-            // Initialize values
+            // Initialise values
             fill = isAlwaysFull
                 ? (float)(random.NextDouble() * 10 + 85) // Start 85-95% full
                 : (float)(random.NextDouble() * 10 + 20); // Start 20-30%
@@ -246,9 +244,7 @@ public class DbSeeder
                 });
             }
         }
-
         context.SensorAnalysisReadings.AddRange(sensorAnalysisData);
         await context.SaveChangesAsync();
     }
-
 }
