@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using Bindicator.Data;
 using Bindicator.Services;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -31,15 +31,15 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 1 * 1024 * 1024;
 });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.MapHub<Bindicator.Hubs.BinStatusHub>("/binStatusHub");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    _ = app.UseExceptionHandler("/Home/Error");
+    _ = app.UseHsts();
 }
 
 app.UseHttpsRedirection();
